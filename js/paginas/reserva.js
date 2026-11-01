@@ -105,7 +105,9 @@ async function iniciar() {
         return;
     }
     $('#estado-carga').hidden = true;
-    form.append(el('datalist', { id: 'lista-libros' }, catalogo.map((l) => el('option', { value: etiqueta(l) }))));
+    // Sugerencias ordenadas por autor y, dentro de cada autor, por título
+    const ordenados = [...catalogo].sort((a, b) => a.autor.localeCompare(b.autor, 'es') || a.titulo.localeCompare(b.titulo, 'es'));
+    form.append(el('datalist', { id: 'lista-libros' }, ordenados.map((l) => el('option', { value: etiqueta(l) }))));
     form.hidden = false;
     const libro = catalogo.find((l) => l.id === preseleccion);
     dibujar([{ libro: libro ? etiqueta(libro) : '', cantidad: '1' }]);
