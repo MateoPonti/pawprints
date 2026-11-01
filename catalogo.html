@@ -23,65 +23,107 @@
     <noscript><p>PawPrints necesita JavaScript para mostrar el catálogo y las cuentas. Activalo en tu navegador y volvé a cargar la página.</p></noscript>
     <h1>Catálogo</h1>
 
-    <form id="filtros" class="filtros" action="catalogo.html" method="get" aria-labelledby="filtros-titulo" novalidate>
-      <h2 id="filtros-titulo" class="visualmente-oculto">Filtrar y ordenar</h2>
-      <div class="aviso resumen-errores" tabindex="-1" hidden></div>
-      <div class="aviso aviso-general" role="alert" tabindex="-1" hidden></div>
-      <fieldset>
-        <legend>Filtrar</legend>
-        <div class="campo">
-          <label for="genero">Género</label>
-          <select id="genero" name="genero">
-            <option value="">Todos</option>
-            <option value="novela">Novela</option>
-            <option value="cuento">Cuento</option>
-            <option value="poesia">Poesía</option>
-            <option value="infantil">Infantil</option>
-          </select>
+    <!-- Los libros se piden una sola vez a la API; buscar, filtrar, ordenar y paginar lo hace js/paginas/catalogo.js -->
+    <form id="filtros" class="filtros" role="search" aria-label="Buscar en el catálogo" novalidate>
+      <div class="campo buscador">
+        <label for="buscar">Buscar por título o autor</label>
+        <div class="buscador-fila">
+          <input type="search" id="buscar" name="q" maxlength="100" autocomplete="off" enterkeyhint="search"
+                 placeholder="Por ejemplo: Borges" aria-describedby="buscar-ayuda">
+          <button type="submit">Buscar</button>
         </div>
-        <div class="campo">
-          <label for="autor">Autor</label>
-          <input type="text" id="autor" name="autor" maxlength="100" autocomplete="off" placeholder="Nombre del autor">
-        </div>
-        <div class="campo">
-          <label for="precio-max">Precio máximo (en pesos)</label>
-          <input type="number" id="precio-max" name="precio_max" min="0" max="999999999" step="1" inputmode="numeric"
-                 title="Ingresá un número entero de 0 en adelante." aria-describedby="precio-max-ayuda">
-          <p class="ayuda" id="precio-max-ayuda">Dejalo vacío para ver todos los precios.</p>
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Ordenar</legend>
-        <div class="campo">
-          <label for="orden">Ordenar por</label>
-          <select id="orden" name="orden">
-            <option value="relevancia">Relevancia</option>
-            <option value="precio-asc">Precio: menor a mayor</option>
-            <option value="precio-desc">Precio: mayor a menor</option>
-            <option value="titulo">Título (A-Z)</option>
-          </select>
-        </div>
-        <div class="campo">
-          <label for="per-page">Libros por página</label>
-          <select id="per-page" name="per_page">
-            <option value="6">6</option>
-            <option value="12">12</option>
-            <option value="24">24</option>
-          </select>
-        </div>
-      </fieldset>
-
-      <div class="barra">
-        <button type="submit" data-ocupado="Buscando...">Aplicar filtros</button>
-        <a class="btn secundario" href="catalogo.html">Quitar filtros</a>
+        <p class="ayuda" id="buscar-ayuda">Los resultados se actualizan mientras escribís.</p>
       </div>
+
+      <section id="historial" class="historial" aria-labelledby="historial-titulo" hidden>
+        <h2 id="historial-titulo">Búsquedas recientes</h2>
+        <ul id="historial-lista"></ul>
+        <button type="button" id="historial-borrar" class="boton-secundario boton-chico">Borrar búsquedas recientes</button>
+      </section>
+
+      <details id="panel-filtros" class="panel-filtros">
+        <summary>Filtros y orden <span id="filtros-activos" class="contador-filtros"></span></summary>
+        <div class="panel-contenido">
+          <fieldset>
+            <legend>Filtrar</legend>
+            <div class="campo">
+              <label for="genero">Género</label>
+              <select id="genero" name="genero">
+                <option value="">Todos</option>
+                <option value="novela">Novela</option>
+                <option value="cuento">Cuento</option>
+                <option value="poesia">Poesía</option>
+                <option value="infantil">Infantil</option>
+              </select>
+            </div>
+            <div class="rango">
+              <div class="campo">
+                <label for="precio-min">Precio desde</label>
+                <input type="number" id="precio-min" name="precio_min" min="0" max="999999999" step="1" inputmode="numeric"
+                       title="Ingresá un número entero de 0 en adelante." placeholder="$ mínimo">
+              </div>
+              <div class="campo">
+                <label for="precio-max">Precio hasta</label>
+                <input type="number" id="precio-max" name="precio_max" min="0" max="999999999" step="1" inputmode="numeric"
+                       title="Ingresá un número entero de 0 en adelante." placeholder="$ máximo">
+              </div>
+            </div>
+            <p class="ayuda" id="rango-ayuda">En pesos. Dejá vacío un extremo para no ponerle límite.</p>
+          </fieldset>
+
+          <fieldset>
+            <legend>Ordenar</legend>
+            <div class="campo">
+              <label for="orden">Ordenar por</label>
+              <select id="orden" name="orden">
+                <option value="relevancia">Relevancia</option>
+                <option value="titulo">Título</option>
+                <option value="autor">Autor</option>
+                <option value="precio">Precio</option>
+                <option value="genero">Género</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="sentido">Sentido</label>
+              <select id="sentido" name="sentido">
+                <option value="asc">Ascendente (A-Z, $ menor)</option>
+                <option value="desc">Descendente (Z-A, $ mayor)</option>
+              </select>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Mostrar</legend>
+            <div class="campo">
+              <label for="por-pagina">Libros por página</label>
+              <select id="por-pagina" name="por_pagina">
+                <option value="6">6</option>
+                <option value="12">12</option>
+                <option value="24">24</option>
+                <option value="48">48</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="modo">Forma de ver más libros</label>
+              <select id="modo" name="modo">
+                <option value="paginas">Páginas numeradas</option>
+                <option value="scroll">Scroll infinito</option>
+              </select>
+            </div>
+          </fieldset>
+
+          <div class="barra">
+            <button type="submit" id="ver-resultados" class="solo-celular">Ver resultados</button>
+            <button type="button" id="quitar-filtros" class="boton-secundario">Quitar filtros</button>
+          </div>
+        </div>
+      </details>
     </form>
 
     <section aria-labelledby="listado-titulo">
-      <h2 id="listado-titulo">Libros disponibles</h2>
+      <h2 id="listado-titulo" tabindex="-1">Libros disponibles</h2>
       <p id="estado-resultados"></p>
-      <div id="resultados" aria-live="polite" aria-busy="true"></div>
+      <div id="resultados" aria-busy="true"></div>
     </section>
   </main>
 

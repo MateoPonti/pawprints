@@ -36,13 +36,13 @@ Abrir `http://localhost:5500`. Por defecto el sitio usa el back publicado, así 
 
 | Página | Endpoint | Pantalla |
 |---|---|---|
-| `index.html` | `GET /api/libros?per_page=3` | Inicio con libros destacados |
-| `catalogo.html` | `GET /api/libros` | Filtros, orden y paginación (estado en la URL) |
+| `index.html` | `GET /api/libros?per_page=3` | Inicio con carrusel de novedades y libros destacados |
+| `catalogo.html` | `GET /api/libros?per_page=100` (una sola vez) | Búsqueda, filtros, orden y paginación hechos en JS (estado en la URL) |
 | `libro.html?id=slug` | `GET /api/libros/{id}` | Detalle |
 | `reserva.html` | `GET /api/libros?per_page=100`, `POST /api/reservas` | Reserva de uno o más libros |
 | `login.html` | `POST /api/login` | Ingresar (`?volver=pagina.html` vuelve ahí) |
 | `registro.html` | `POST /api/registro` y `POST /api/login` | Crear cuenta e ingresar |
-| `admin-libro.html` | `POST /api/admin/libros` | Alta de libros (solo rol admin) |
+| `admin-libro.html` | `POST /api/admin/portadas` y `POST /api/admin/libros` | Alta de libros con tapa por arrastrar y soltar (solo rol admin) |
 | `nosotros.html`, `contacto.html` | - | Contenido fijo |
 
 ## Contrato de la API que espera el front
@@ -58,6 +58,8 @@ Todas las respuestas son JSON. Los errores tienen la forma `{"error": "codigo", 
 | `GET /api/me` | token | - | `{usuario}` |
 | `POST /api/reservas` | público | `{nombre, email, telefono, items: [{libro, cantidad}]}` | `201 {reserva: {nombre, email, ...}}`. En `422`, las claves de `errores` son `nombre`, `email`, `telefono`, `items.N.libro`, `items.N.cantidad` e `items` (error general). |
 | `POST /api/admin/libros` | admin | `titulo`, `autor`, `genero`, `precio`, `resumen`, `descripcion`, `autor_bio`, `imagen_url` | `201 {libro}` o `422` con `errores` (claves = nombres de los campos) |
+| `POST /api/admin/portadas` | admin | La imagen tal cual en el cuerpo, con `Content-Type: image/jpeg`, `image/png` o `image/webp` (hasta 1 MB) | `201 {portada: {id, url}}` (`url` relativa a la API, por ejemplo `/api/portadas/3`) o `422` con `errores.portada` |
+| `GET /api/portadas/{id}` | público | - | La imagen |
 
 `portada` es la URL de la imagen del libro; si viene vacía, el front usa `img/placeholder.svg`.
 
@@ -67,13 +69,69 @@ Todas las respuestas son JSON. Los errores tienen la forma `{"error": "codigo", 
 index.html catalogo.html libro.html reserva.html
 nosotros.html contacto.html login.html registro.html admin-libro.html
 styles/   reset.css (reset-css 5.0.1), style.css, print.css
-img/      placeholder.svg
+img/      placeholder.svg, carrusel/ (imágenes de novedades del inicio)
 SITEMAP.md, PawPrints Wireframes.html, autores.txt, VERSION
 js/
-  api/         config.js (dirección de la API), config.local.example.js, cliente.js (fetch + token + errores), auth.js, libros.js, reservas.js, admin.js
-  servicios/   sesion.js, dom.js, formato.js, formularios.js (validación), layout.js (cabecera, menú y pie)
-  paginas/     un script por pantalla
+  api/          config.js (dirección de la API), config.local.example.js, cliente.js (fetch + token + errores), auth.js, libros.js, reservas.js, admin.js
+  servicios/    sesion.js, dom.js, formato.js, formularios.js (validación), layout.js (cabecera, menú y pie), historial.js (búsquedas recientes)
+  componentes/  carrusel.js, zona-imagen.js (componentes reutilizables)
+  paginas/      un script por pantalla
 ```
+
+## Programación frontend (Entrega 4)
+
+### Carrusel (`js/componentes/carrusel.js`)
+
+Convierte un contenedor con imágenes en un carrusel. Recibe un solo parámetro, el contenedor:
+
+```html
+<div id="novedades" data-efecto="deslizar" data-intervalo="5000" aria-label="Novedades">
+  <img src="img/carrusel/semana-libro.svg" alt="...">
+  <img src="img/carrusel/club-lectura.svg" alt="...">
+</div>
+<script type="module">
+  import { Carrusel } from './js/componentes/carrusel.js';
+  new Carrusel(document.querySelector('#novedades'));
+</script>
+```
+
+- **Barra de descarga:** cada imagen se descarga con `fetch` leyendo el cuerpo de a pedazos, así se sabe cuántos bytes llegaron sobre el total (`Content-Length`). La barra muestra el porcentaje de todas las imágenes juntas, y recién al llegar a 100% arranca el pase automático. Si un servidor no informa el tamaño, esa imagen cuenta al terminar de bajar.
+- **Cuatro efectos de transición:** deslizar, desvanecer, zoom y voltear. Se hacen con la Web Animations API (`element.animate`). El inicial sale de `data-efecto` y se puede cambiar desde el propio carrusel.
+- **Formas de pasar las imágenes:** botones anterior y siguiente, miniaturas, swipe (Pointer Events: sirve con el dedo, el lápiz o el mouse) y flechas del teclado. Las flechas funcionan con el foco en el carrusel o mientras se ve en pantalla, salvo que se esté escribiendo en un campo. Inicio y Fin van a la primera y a la última.
+- **Responsive y pantalla completa:** dentro del contenedor ocupa todo el ancho con proporción 2:1. El botón *Pantalla completa* lo lleva a todo el viewport con la Fullscreen API, o con CSS donde no existe, como en iPhone. Las imágenes se redimensionan con `object-fit: contain` para entrar enteras. Escape sale.
+- **Accesibilidad:** el pase automático se puede pausar y se detiene solo con el mouse encima, con el foco adentro o con la pestaña oculta. Con `prefers-reduced-motion` las imágenes cambian sin animación, y los cambios hechos a mano se anuncian al lector de pantalla.
+
+### Validaciones en línea del alta de libros
+
+La validación es la de `js/servicios/formularios.js`, la misma de todos los formularios. Para que se vea igual en todos los navegadores no se usan las burbujas nativas (`novalidate`), que cambian en cada uno:
+
+- Al salir de un campo que se modificó se muestra su error. Mientras se corrige, el mensaje se actualiza con cada tecla y desaparece al quedar bien. Al enviar se revisa todo y aparece un resumen con enlaces a cada error.
+- Un campo obligatorio con solo espacios cuenta como vacío, igual que en el back. Cada campo tiene su propio mensaje (`data-faltante`).
+- Los campos con límite muestran un contador ("120 de 300 caracteres") que cambia de color cerca del máximo.
+- Los límites son los mismos que valida el back (`LibroValidator`), y sus errores 422 se muestran igual que los del navegador.
+
+### Tapa por arrastrar y soltar (`js/componentes/zona-imagen.js`)
+
+- Se arrastra la imagen sobre la zona o se elige con el botón. El control real es un `<input type="file">`, así funciona también con teclado y lector de pantalla. Lo que se suelta se copia al input con `DataTransfer`.
+- Se valida en el momento: tipo JPG, PNG o WebP, hasta 10 MB y al menos 100x150 píxeles. Se muestran la vista previa, las medidas y el peso, y se puede quitar.
+- Antes de subirla, la imagen se achica en el navegador con un `<canvas>` (como máximo 600x900) y se convierte a WebP, o a JPEG si el navegador no genera WebP. Una foto de varios MB queda en pocos KB.
+- Al guardar se sube con `POST /api/admin/portadas`, que devuelve la dirección de la tapa, y esa dirección va como `imagen_url` del libro. Con una imagen elegida, el campo de dirección se deshabilita para que no haya dos tapas.
+
+### Catálogo con filtros en JS (`js/paginas/catalogo.js`)
+
+- Los libros se piden **una sola vez** a la API (de a 100 por pedido). Después buscar, filtrar, ordenar y paginar se hace en el navegador, sin volver a pedir nada.
+- **Búsqueda** por título o autor, sin distinguir mayúsculas ni acentos. Cada palabra puede estar en cualquier orden. Los resultados se actualizan mientras se escribe.
+- **Filtros:** género y rango de precio (desde y hasta). Si "hasta" es menor que "desde", se marca el error y se sigue usando el último rango válido.
+- **Orden** por relevancia, título, autor, precio o género, en sentido ascendente o descendente. A igual valor se desempata por título.
+- **Paginado:** 6, 12, 24 o 48 libros por página, con *páginas numeradas* (con "…" cuando son muchas) o *scroll infinito*. El scroll infinito usa `IntersectionObserver`, y el botón "Mostrar más libros" también se puede usar a mano.
+- El estado queda en la URL (`?q=borges&orden=precio&sentido=desc`), así se puede compartir, recargar y usar atrás y adelante.
+- **Celular:** los filtros van en un panel plegable que arranca cerrado, para que los libros se vean enseguida, y muestra cuántos filtros hay activos. *Ver N resultados* cierra el panel y lleva a los libros. Los campos tienen 16px para que iOS no haga zoom y son altos para tocarlos con el dedo.
+
+### Búsquedas recientes (`js/servicios/historial.js`)
+
+- Se guardan en `localStorage` las últimas **5** búsquedas: texto, género, rango de precio y orden. Se guarda una búsqueda al apretar Enter o *Buscar*, o al terminar de escribir en el buscador.
+- Si se repite una búsqueda, sube al primer lugar en vez de duplicarse. Con más de 5, se elimina la más antigua.
+- Aparecen arriba de los filtros: un clic repite la búsqueda, y hay un botón para borrarlas. Si el navegador bloquea el almacenamiento, el catálogo funciona igual, sin historial.
 
 ## Formularios y marcado
 

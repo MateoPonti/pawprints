@@ -1,11 +1,14 @@
-// Inicio: textos fijos más tres libros del catálogo traídos de la API.
+// Inicio: carrusel de novedades, textos fijos y tres libros del catálogo traídos de la API.
 import { montar } from '../servicios/layout.js';
+import { Carrusel } from '../componentes/carrusel.js';
 import { el, $, reemplazar } from '../servicios/dom.js';
 import { precio, portada } from '../servicios/formato.js';
 import * as libros from '../api/libros.js';
 import * as sesion from '../servicios/sesion.js';
 
 montar();
+
+new Carrusel($('#novedades'));
 
 const zona = $('#destacados-lista');
 

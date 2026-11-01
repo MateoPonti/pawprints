@@ -288,17 +288,194 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
 .fila-libro { position: relative; }
 .fila-libro .quitar { margin-top: .25rem; }
 
-.filtros { max-width: none; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; }
-.filtros fieldset { flex: 1 1 240px; margin-bottom: 0; }
-.filtros .barra { flex-basis: 100%; }
-.filtros .aviso, .filtros .resumen-errores { flex-basis: 100%; }
+/* Contador de caracteres de los campos con data-contador */
+.contador { max-width: none; margin: .25rem 0 0; font-size: .8rem; color: var(--texto-suave); text-align: right; }
+.contador.cerca { color: var(--error); font-weight: 600; }
+
+/* ---------- Zona para arrastrar la tapa (js/componentes/zona-imagen.js) ---------- */
+.zona-imagen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    border: 3px dashed var(--borde-campo);
+    border-radius: .6rem;
+    background: var(--violeta-claro);
+    transition: background-color .2s, border-color .2s;
+}
+.zona-imagen.arrastrando { background: var(--borde); border-color: var(--violeta); border-style: solid; }
+.zona-imagen:focus-within { outline: 3px solid var(--foco); outline-offset: 2px; }
+.zona-texto { margin: 0; font-weight: 600; color: var(--violeta); }
+.zona-icono { display: block; font-size: 2rem; line-height: 1; }
+.zona-o { margin: 0; color: var(--texto-suave); font-size: .9rem; }
+/* El <label> del input de archivo se ve como un botón secundario */
+.zona-boton {
+    display: inline-block;
+    margin: 0;
+    padding: .65rem 1.4rem;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--violeta);
+    background: var(--blanco);
+    border: 2px solid var(--violeta);
+    border-radius: 999px;
+    cursor: pointer;
+}
+.zona-boton:hover { background: var(--violeta-claro); color: var(--violeta-oscuro); }
+.zona-imagen.con-imagen .zona-texto, .zona-imagen.con-imagen .zona-o { display: none; }
+.zona-vista { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; text-align: left; }
+.zona-miniatura { max-height: 180px; width: auto; border-radius: .3rem; background: var(--blanco); box-shadow: 0 2px 8px rgb(0 0 0 / .15); }
+.zona-nombre { margin: 0; font-weight: 600; word-break: break-all; }
+.campo:has([aria-invalid="true"]) .zona-imagen { border-color: var(--error); }
+
+/* ---------- Carrusel (js/componentes/carrusel.js) ---------- */
+.carrusel { position: relative; }
+.carrusel-marco {
+    position: relative;
+    aspect-ratio: 2 / 1;
+    overflow: hidden;
+    border-radius: .6rem;
+    background: var(--violeta-oscuro);
+}
+.carrusel-escenario { position: absolute; inset: 0; touch-action: pan-y; user-select: none; cursor: grab; }
+.carrusel-escenario:active { cursor: grabbing; }
+.carrusel-diapositiva { position: absolute; inset: 0; visibility: hidden; }
+.carrusel-diapositiva.activa, .carrusel-diapositiva.saliendo { visibility: visible; }
+.carrusel-diapositiva.activa { z-index: 1; }
+/* Las imágenes se redimensionan para entrar enteras en el contenedor (o en la pantalla completa) */
+.carrusel-diapositiva img { width: 100%; height: 100%; object-fit: contain; }
+.carrusel-diapositiva img.rota { display: flex; align-items: center; justify-content: center; padding: 1rem; color: var(--blanco); }
+
+.carrusel-flecha {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    transform: translateY(-50%);
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    font-size: 1.8rem;
+    line-height: 1;
+    color: var(--violeta);
+    background: rgb(255 255 255 / .9);
+    border-color: var(--blanco);
+}
+.carrusel-flecha:hover { color: var(--blanco); }
+.carrusel-flecha.anterior { left: .5rem; }
+.carrusel-flecha.siguiente { right: .5rem; }
+
+.carrusel-barra { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; margin-top: .75rem; }
+.carrusel-contador { margin: 0 auto 0 0; font-weight: 700; color: var(--violeta); }
+.carrusel-barra button { padding: .45rem 1rem; font-size: .85rem; }
+.carrusel-efecto { display: flex; align-items: center; gap: .4rem; margin: 0; font-size: .85rem; }
+.carrusel-efecto select { width: auto; padding: .35rem .5rem; }
+
+.carrusel-miniaturas { display: flex; gap: .5rem; margin-top: .75rem; padding-bottom: .25rem; overflow-x: auto; scroll-snap-type: x proximity; }
+.carrusel-miniatura {
+    flex: 0 0 auto;
+    padding: 0;
+    border: 3px solid transparent;
+    border-radius: .4rem;
+    background: none;
+    opacity: .6;
+    scroll-snap-align: center;
+}
+.carrusel-miniatura:hover { background: none; border-color: var(--borde); opacity: 1; }
+.carrusel-miniatura[aria-current="true"] { border-color: var(--violeta); opacity: 1; }
+.carrusel-miniatura img { display: block; width: 96px; height: 48px; object-fit: cover; border-radius: .2rem; }
+
+/* Barra de descarga: mientras está, el carrusel no se puede usar */
+.carrusel-carga {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    border-radius: .6rem;
+    background: var(--violeta-claro);
+    color: var(--violeta);
+    font-weight: 600;
+    transition: opacity .4s, visibility .4s;
+}
+.carrusel:not(.cargando) .carrusel-carga { opacity: 0; visibility: hidden; pointer-events: none; }
+.carrusel-pista { width: min(80%, 24rem); height: .8rem; overflow: hidden; border: 2px solid var(--violeta); border-radius: 999px; background: var(--blanco); }
+.carrusel-relleno { display: block; width: 0; height: 100%; background: var(--violeta); transition: width .2s; }
+
+/* Pantalla completa: ocupa todo el viewport y las imágenes se ajustan a ese tamaño */
+.sin-scroll { overflow: hidden; }
+.carrusel.pantalla-completa {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: .75rem;
+    background: #000000;
+}
+.carrusel.pantalla-completa .carrusel-marco { flex: 1; aspect-ratio: auto; border-radius: 0; background: #000000; }
+.carrusel.pantalla-completa .carrusel-contador, .carrusel.pantalla-completa .carrusel-efecto { color: var(--blanco); }
+
+/* ---------- Catálogo: búsqueda, historial y filtros ---------- */
+.filtros { max-width: none; }
+.buscador-fila { display: flex; gap: .5rem; }
+.buscador-fila input { flex: 1; min-width: 0; }
+
+.historial { margin: 0 0 1rem; }
+.historial h2 { margin: 0 0 .5rem; font-size: 1rem; }
+.historial ul { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .5rem; }
+.busqueda-reciente {
+    padding: .45rem .9rem;
+    font-size: .85rem;
+    font-weight: 400;
+    color: var(--violeta);
+    background: var(--violeta-claro);
+    border: 1px solid var(--borde-campo);
+}
+.busqueda-reciente:hover { color: var(--blanco); }
+.boton-chico { padding: .4rem .9rem; font-size: .85rem; }
+
+.panel-filtros { border: 2px solid var(--borde-campo); border-radius: .5rem; }
+.panel-filtros summary {
+    padding: .85rem 1.1rem;
+    font-weight: 700;
+    color: var(--violeta);
+    cursor: pointer;
+    min-height: 2.75rem;
+}
+.panel-filtros[open] summary { border-bottom: 1px solid var(--borde); }
+.contador-filtros { font-weight: 400; color: var(--texto-suave); }
+.panel-contenido { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem; padding: 1rem; }
+.panel-contenido fieldset { flex: 1 1 240px; margin-bottom: 0; }
+.panel-contenido .barra { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: .75rem; }
+.rango { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.rango .campo { margin-bottom: .25rem; }
+
+/* En el celular el botón "Ver resultados" cierra el panel y lleva a los libros; en pantallas anchas no hace falta */
+@media (min-width: 700px) {
+    .solo-celular { display: none; }
+}
+@media (max-width: 699px) {
+    .panel-contenido .barra button { flex: 1 1 100%; }
+    /* Campos y botones más altos para tocarlos con el dedo, y 16px para que iOS no haga zoom al enfocarlos */
+    .filtros input, .filtros select { min-height: 2.9rem; font-size: 16px; }
+    .carrusel-flecha { width: 2.5rem; height: 2.5rem; }
+    .carrusel-efecto { flex-basis: 100%; }
+}
+
+.mas-libros { display: block; margin: 1.5rem auto 0; }
+.fin-listado { margin: 1.5rem auto 0; text-align: center; color: var(--texto-suave); }
 
 [aria-busy="true"] { cursor: progress; }
 
 /* ---------- Paginación ---------- */
 .paginacion { margin-top: 1.5rem; }
 .paginacion ul { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
-.paginacion a, .paginacion span {
+.paginacion a, .paginacion span, .paginacion .boton-pagina {
     display: block;
     min-width: 2.75rem;
     padding: .55rem .8rem;
@@ -307,7 +484,9 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
     border-radius: .4rem;
     text-decoration: none;
 }
-.paginacion a:hover { background: var(--violeta-claro); }
+.paginacion .boton-pagina { font-weight: 400; color: var(--violeta); background: var(--blanco); }
+.paginacion a:hover, .paginacion .boton-pagina:hover { background: var(--violeta-claro); color: var(--violeta-oscuro); }
+.paginacion .puntos { border: 0; min-width: 1.5rem; padding-inline: 0; }
 .paginacion [aria-current="page"] { background: var(--violeta); border-color: var(--violeta); color: var(--blanco); font-weight: 700; text-decoration: underline; }
 .paginacion [aria-disabled="true"] { color: #6b6b6b; border-style: dotted; }
 

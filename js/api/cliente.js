@@ -22,18 +22,20 @@ function armarUrl(ruta, consulta) {
     return url;
 }
 
-export async function pedir(metodo, ruta, { consulta, cuerpo } = {}) {
+// cuerpo se manda como JSON; archivo (un Blob o File) se manda tal cual, con su tipo como Content-Type.
+export async function pedir(metodo, ruta, { consulta, cuerpo, archivo } = {}) {
     const cabeceras = { Accept: 'application/json' };
     const token = sesion.token();
     if (token) cabeceras.Authorization = `Bearer ${token}`;
     if (cuerpo !== undefined) cabeceras['Content-Type'] = 'application/json';
+    if (archivo) cabeceras['Content-Type'] = archivo.type;
 
     let respuesta;
     try {
         respuesta = await fetch(armarUrl(ruta, consulta), {
             method: metodo,
             headers: cabeceras,
-            body: cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined,
+            body: archivo || (cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined),
         });
     } catch {
         throw new ErrorApi(0, 'sin_conexion',
@@ -64,3 +66,7 @@ export async function pedir(metodo, ruta, { consulta, cuerpo } = {}) {
 
 export const get = (ruta, consulta) => pedir('GET', ruta, { consulta });
 export const post = (ruta, cuerpo) => pedir('POST', ruta, { cuerpo });
+export const subir = (ruta, archivo) => pedir('POST', ruta, { archivo });
+
+// Las rutas que devuelve la API (por ejemplo /api/portadas/3) pasan a ser direcciones completas
+export const urlDeApi = (ruta) => API_URL + ruta;

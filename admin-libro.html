@@ -29,17 +29,19 @@
       <div class="aviso aviso-general" role="alert" tabindex="-1" hidden></div>
       <div class="campo">
         <label for="titulo">Título <span class="nota">(obligatorio)</span></label>
-        <input type="text" id="titulo" name="titulo" required aria-describedby="titulo-ayuda" maxlength="150">
+        <input type="text" id="titulo" name="titulo" required aria-describedby="titulo-ayuda" maxlength="150"
+               data-contador data-faltante="Ingresá el título." autocomplete="off">
         <p class="ayuda" id="titulo-ayuda">Hasta 150 caracteres.</p>
       </div>
       <div class="campo">
         <label for="autor">Autor <span class="nota">(obligatorio)</span></label>
-        <input type="text" id="autor" name="autor" required aria-describedby="autor-ayuda" maxlength="100">
+        <input type="text" id="autor" name="autor" required aria-describedby="autor-ayuda" maxlength="100"
+               data-contador data-faltante="Ingresá el autor." autocomplete="off">
         <p class="ayuda" id="autor-ayuda">Hasta 100 caracteres.</p>
       </div>
       <div class="campo">
         <label for="genero">Género <span class="nota">(obligatorio)</span></label>
-        <select id="genero" name="genero" required >
+        <select id="genero" name="genero" required data-faltante="Elegí un género de la lista.">
           <option value="">Seleccioná un género...</option>
           <option value="novela">Novela</option>
           <option value="cuento">Cuento</option>
@@ -49,29 +51,38 @@
       </div>
       <div class="campo">
         <label for="precio">Precio (en pesos) <span class="nota">(obligatorio)</span></label>
-        <input type="number" id="precio" name="precio" required aria-describedby="precio-ayuda" min="1" max="999999999" step="1" inputmode="numeric" title="Ingresá un número entero entre 1 y 999999999.">
+        <input type="number" id="precio" name="precio" required aria-describedby="precio-ayuda" min="1" max="999999999" step="1" inputmode="numeric"
+               title="Ingresá un número entero entre 1 y 999999999." data-faltante="Ingresá el precio en pesos (por ejemplo 15000).">
         <p class="ayuda" id="precio-ayuda">Número entero entre 1 y 999.999.999.</p>
       </div>
       <div class="campo">
         <label for="resumen">Resumen <span class="nota">(opcional)</span></label>
-        <textarea id="resumen" name="resumen" aria-describedby="resumen-ayuda" maxlength="300" rows="3"></textarea>
+        <textarea id="resumen" name="resumen" aria-describedby="resumen-ayuda" maxlength="300" rows="3" data-contador></textarea>
         <p class="ayuda" id="resumen-ayuda">Hasta 300 caracteres.</p>
       </div>
       <div class="campo">
         <label for="descripcion">Descripción completa <span class="nota">(opcional)</span></label>
-        <textarea id="descripcion" name="descripcion" aria-describedby="descripcion-ayuda" maxlength="2000" rows="6"></textarea>
+        <textarea id="descripcion" name="descripcion" aria-describedby="descripcion-ayuda" maxlength="2000" rows="6" data-contador></textarea>
         <p class="ayuda" id="descripcion-ayuda">Hasta 2000 caracteres.</p>
       </div>
       <div class="campo">
         <label for="autor-bio">Sobre el autor <span class="nota">(opcional)</span></label>
-        <textarea id="autor-bio" name="autor_bio" aria-describedby="autor-bio-ayuda" maxlength="1000" rows="4"></textarea>
+        <textarea id="autor-bio" name="autor_bio" aria-describedby="autor-bio-ayuda" maxlength="1000" rows="4" data-contador></textarea>
         <p class="ayuda" id="autor-bio-ayuda">Hasta 1000 caracteres.</p>
       </div>
-      <div class="campo">
-        <label for="imagen-url">Dirección de la portada <span class="nota">(opcional)</span></label>
-        <input type="url" id="imagen-url" name="imagen_url" aria-describedby="imagen-url-ayuda" maxlength="255" pattern="https?://.+" inputmode="url" title="Ingresá una dirección que empiece con http:// o https://.">
-        <p class="ayuda" id="imagen-url-ayuda">Una dirección que empiece con http:// o https://. Si la dejás vacía se usa la portada por defecto.</p>
-      </div>
+      <fieldset>
+        <legend>Tapa del libro <span class="nota">(opcional)</span></legend>
+        <div class="campo">
+          <label for="portada">Imagen de la tapa</label>
+          <input type="file" id="portada" name="portada" accept="image/jpeg,image/png,image/webp" aria-describedby="portada-ayuda">
+          <p class="ayuda" id="portada-ayuda">JPG, PNG o WebP de hasta 10 MB y al menos 100x150 píxeles. Antes de subirla la achicamos para que cargue rápido.</p>
+        </div>
+        <div class="campo">
+          <label for="imagen-url">O la dirección de una imagen</label>
+          <input type="url" id="imagen-url" name="imagen_url" aria-describedby="imagen-url-ayuda" maxlength="255" pattern="https?://.+" inputmode="url" title="Ingresá una dirección que empiece con http:// o https://.">
+          <p class="ayuda" id="imagen-url-ayuda">Tiene que empezar con http:// o https://. Si elegís una imagen, no hace falta. Sin ninguna de las dos se usa la portada por defecto.</p>
+        </div>
+      </fieldset>
       <button type="submit" data-ocupado="Guardando...">Guardar libro</button>
     </form>
   </main>

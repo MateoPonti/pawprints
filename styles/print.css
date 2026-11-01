@@ -3,7 +3,11 @@
 @page { size: A4; margin: 2cm; }
 
 /* En papel no se puede usar el menú, los botones ni los filtros */
-#menu, #pie nav, .filtros, a.btn, button, .salto, .paginacion { display: none !important; }
+#menu, #pie nav, .filtros, a.btn, button, .salto, .paginacion,
+.carrusel-barra, .carrusel-miniaturas, .carrusel-carga, .mas-libros { display: none !important; }
+
+/* Del carrusel se imprime solo la imagen que se está viendo */
+.carrusel-marco { aspect-ratio: 2 / 1; background: none; break-inside: avoid; }
 
 body { max-width: 100%; margin: 0; font-size: 11pt; color: #000; background: #fff; }
 

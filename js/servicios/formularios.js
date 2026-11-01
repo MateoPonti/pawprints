@@ -5,8 +5,14 @@
 import { ErrorApi } from '../api/cliente.js';
 import { el, $, $$ } from './dom.js';
 
+// Campos de texto donde un valor hecho solo de espacios cuenta como vacío (el back recorta los espacios)
+const DE_TEXTO = ['text', 'email', 'search', 'url', 'tel', 'textarea'];
+
 export function mensajeDe(control) {
     const v = control.validity;
+    if (control.required && DE_TEXTO.includes(control.type) && control.value !== '' && control.value.trim() === '') {
+        return control.dataset.faltante || 'Completá este campo.';
+    }
     if (v.valid) return '';
     if (v.customError) return control.validationMessage;
     if (v.valueMissing) return control.dataset.faltante || 'Completá este campo.';
@@ -121,19 +127,33 @@ function ocupado(form, estado) {
 }
 
 // Conecta el formulario: valida al enviar, corrige en vivo y llama a alEnviar(form) si todo está bien.
+// Validación en línea, igual en todos los navegadores (no se usan las burbujas nativas, que cambian en cada uno):
+// - al salir de un campo que el usuario modificó se muestra su error, si tiene;
+// - mientras se corrige un campo con error, el mensaje se actualiza con cada tecla y desaparece al quedar bien.
 export function activar(form, alEnviar, { extra } = {}) {
     form.noValidate = true;
 
-    const revalidar = (evento) => {
-        const control = evento.target;
-        if (control.getAttribute?.('aria-invalid') !== 'true') return;
+    const validarCampo = (control) => {
+        if (!control.id || control.disabled) return;
         control.setCustomValidity('');
         const mensaje = (extra ? extra()[control.id] : '') || mensajeDe(control);
         if (mensaje) ponerError(control, mensaje);
         else sacarError(control);
     };
-    form.addEventListener('input', revalidar);
-    form.addEventListener('change', revalidar);
+
+    form.addEventListener('input', (evento) => {
+        const control = evento.target;
+        control.dataset.tocado = 'true';
+        if (control.getAttribute?.('aria-invalid') === 'true') validarCampo(control);
+    });
+    // change llega con los select, las casillas y los archivos: ahí el valor ya es definitivo
+    form.addEventListener('change', (evento) => {
+        evento.target.dataset.tocado = 'true';
+        validarCampo(evento.target);
+    });
+    form.addEventListener('focusout', (evento) => {
+        if (evento.target.dataset?.tocado === 'true') validarCampo(evento.target);
+    });
 
     form.addEventListener('submit', async (evento) => {
         evento.preventDefault();
@@ -173,6 +193,26 @@ export function mostrarErroresDeApi(form, error) {
         mostrarAviso(form, sueltos.join(' ') || error.message);
         if (!errores.length) $('.aviso-general', form)?.focus();
     }
+}
+
+// Contador de caracteres para los campos con data-contador y maxlength: "120 de 300 caracteres".
+// Cerca del límite cambia de estilo y lo anuncia el lector de pantalla (aria-live).
+export function conectarContadores(form) {
+    $$('[data-contador][maxlength]', form).forEach((control) => {
+        const contador = el('p', { class: 'contador', id: `${control.id}-contador`, 'aria-live': 'polite' });
+        control.after(contador);
+        const actualizar = () => {
+            const usados = control.value.length;
+            const cerca = usados >= control.maxLength * 0.9;
+            contador.textContent = `${usados} de ${control.maxLength} caracteres`;
+            contador.classList.toggle('cerca', cerca);
+            // Solo se anuncia cuando falta poco, para no leer un número con cada tecla
+            contador.setAttribute('aria-live', cerca ? 'polite' : 'off');
+        };
+        control.addEventListener('input', actualizar);
+        form.addEventListener('reset', () => window.setTimeout(actualizar));
+        actualizar();
+    });
 }
 
 // Casilla "Mostrar contraseña": cambia el type de los campos listados en data-destino (ids separados por espacio).
