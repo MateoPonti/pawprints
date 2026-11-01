@@ -17,19 +17,20 @@ const filas = $('#filas');
 const botonAgregar = $('#agregar-libro');
 let catalogo = [];
 
-function opciones(seleccionado) {
-    return [
-        el('option', { value: '' }, 'Seleccioná un libro del catálogo...'),
-        ...catalogo.map((l) => el('option', { value: l.id, selected: l.id === seleccionado }, `${l.titulo} - ${l.autor}`)),
-    ];
-}
+// El libro se elige escribiendo: el datalist sugiere los del catálogo que coinciden con lo escrito
+const etiqueta = (libro) => `${libro.titulo} - ${libro.autor}`;
+const buscarLibro = (texto) => catalogo.find((l) => etiqueta(l) === texto.trim());
 
 function fila(n, libro = '', cantidad = '1') {
     return el('fieldset', { class: 'fila-libro' },
         el('legend', { text: `Libro ${n}` }),
         el('div', { class: 'campo' },
             el('label', { for: `libro-${n}` }, 'Título ', el('span', { class: 'nota', text: '(obligatorio)' })),
-            el('select', { id: `libro-${n}`, name: `items.${n - 1}.libro`, required: true }, opciones(libro))),
+            el('input', {
+                type: 'text', id: `libro-${n}`, name: `items.${n - 1}.libro`, required: true,
+                list: 'lista-libros', autocomplete: 'off', value: libro,
+                placeholder: 'Escribí el título o el autor...',
+            })),
         el('div', { class: 'campo' },
             el('label', { for: `cantidad-${n}` }, 'Cantidad ', el('span', { class: 'nota', text: `(de ${CANTIDAD_MIN} a ${CANTIDAD_MAX})` })),
             el('input', {
@@ -45,8 +46,8 @@ function fila(n, libro = '', cantidad = '1') {
 
 function valoresActuales() {
     return $$('.fila-libro', filas).map((f) => ({
-        libro: $('select', f).value,
-        cantidad: $('input', f).value,
+        libro: $('input[list]', f).value,
+        cantidad: $('input[type="number"]', f).value,
     }));
 }
 
@@ -104,8 +105,10 @@ async function iniciar() {
         return;
     }
     $('#estado-carga').hidden = true;
+    form.append(el('datalist', { id: 'lista-libros' }, catalogo.map((l) => el('option', { value: etiqueta(l) }))));
     form.hidden = false;
-    dibujar([{ libro: catalogo.some((l) => l.id === preseleccion) ? preseleccion : '', cantidad: '1' }]);
+    const libro = catalogo.find((l) => l.id === preseleccion);
+    dibujar([{ libro: libro ? etiqueta(libro) : '', cantidad: '1' }]);
 }
 
 botonAgregar.addEventListener('click', agregar);
@@ -115,10 +118,15 @@ activar(form, async (f) => {
         nombre: f.elements.nombre.value.trim(),
         email: f.elements.email.value.trim(),
         telefono: f.elements.telefono.value.trim(),
-        items: valoresActuales().map((v) => ({ libro: v.libro, cantidad: Number(v.cantidad) })),
+        items: valoresActuales().map((v) => ({ libro: buscarLibro(v.libro).id, cantidad: Number(v.cantidad) })),
     };
     const { reserva } = await reservas.crear(datos);
     confirmar(reserva, datos);
+}, {
+    // Lo escrito tiene que ser uno de los libros sugeridos
+    extra: () => Object.fromEntries($$('input[list]', filas)
+        .filter((campo) => campo.value.trim() && !buscarLibro(campo.value))
+        .map((campo) => [campo.id, 'Elegí uno de los libros de la lista.'])),
 });
 
 iniciar();
