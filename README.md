@@ -69,7 +69,7 @@ Todas las respuestas son JSON. Los errores tienen la forma `{"error": "codigo", 
 index.html catalogo.html libro.html reserva.html
 nosotros.html contacto.html login.html registro.html admin-libro.html
 styles/   reset.css (reset-css 5.0.1), style.css, print.css
-img/      placeholder.svg, carrusel/ (imágenes de novedades del inicio)
+img/      logo.svg, icono.svg (favicon), placeholder.svg, carrusel/ (imágenes de novedades del inicio)
 SITEMAP.md, PawPrints Wireframes.html, autores.txt, VERSION
 js/
   api/          config.js (dirección de la API), config.local.example.js, cliente.js (fetch + token + errores), auth.js, libros.js, reservas.js, admin.js
@@ -124,7 +124,8 @@ La validación es la de `js/servicios/formularios.js`, la misma de todos los for
 - **Filtros:** género y rango de precio (desde y hasta). Si "hasta" es menor que "desde", se marca el error y se sigue usando el último rango válido.
 - **Orden** por relevancia, título, autor, precio o género, en sentido ascendente o descendente. A igual valor se desempata por título.
 - **Paginado:** 6, 12, 24 o 48 libros por página, con *páginas numeradas* (con "…" cuando son muchas) o *scroll infinito*. El scroll infinito usa `IntersectionObserver`, y el botón "Mostrar más libros" también se puede usar a mano.
-- El estado queda en la URL (`?q=borges&orden=precio&sentido=desc`), así se puede compartir, recargar y usar atrás y adelante.
+- El estado queda en la URL (`?q=borges&orden=precio&sentido=desc`), así se puede compartir, recargar y usar atrás y adelante. Si la URL pide una página que no existe (por ejemplo `?pagina=99`), se avisa y se muestra la última.
+- **Descargar CSV:** baja la vista actual, es decir todos los libros que cumplen la búsqueda y los filtros, en el orden elegido (no solo la página en pantalla). Se arma en el navegador con un `Blob` y usa el mismo formato que `GET /api/libros?formato=csv` del back: RFC 4180, BOM para que Excel muestre los acentos, y las celdas que empiezan con `=`, `+`, `-` o `@` neutralizadas para que no se ejecuten como fórmulas.
 - **Celular:** los filtros van en un panel plegable que arranca cerrado, para que los libros se vean enseguida, y muestra cuántos filtros hay activos. *Ver N resultados* cierra el panel y lleva a los libros. Los campos tienen 16px para que iOS no haga zoom y son altos para tocarlos con el dedo.
 
 ### Búsquedas recientes (`js/servicios/historial.js`)
@@ -152,6 +153,8 @@ Como el manual solo trae esos dos colores, para el hover, los fondos suaves y lo
 La tipografía del manual es Argentum Sans y la equivalente que indica es Montserrat. Cargamos Montserrat desde Google Fonts y dejamos Argentum Sans primera en la lista por si está instalada.
 
 Todo esto está definido una sola vez como variables en `:root`, al principio de `styles/style.css`.
+
+El logo del manual (los dos libros con la huella y "PAW prints") está redibujado en SVG: `img/logo.svg` va en la cabecera de todas las páginas y `img/icono.svg` es el favicon.
 
 ## Responsive
 

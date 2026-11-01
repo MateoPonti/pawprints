@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Catálogo - PawPrints</title>
   <meta name="description" content="Catálogo completo de libros de PawPrints.">
-  <link rel="icon" href="img/placeholder.svg" type="image/svg+xml">
+  <link rel="icon" href="img/icono.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
@@ -122,7 +122,11 @@
 
     <section aria-labelledby="listado-titulo">
       <h2 id="listado-titulo" tabindex="-1">Libros disponibles</h2>
-      <p id="estado-resultados"></p>
+      <div class="barra-resultados">
+        <p id="estado-resultados"></p>
+        <button type="button" id="descargar-csv" class="boton-secundario boton-chico" disabled>Descargar CSV</button>
+      </div>
+      <p id="aviso-pagina" class="aviso-suave" role="status" hidden></p>
       <div id="resultados" aria-busy="true"></div>
     </section>
   </main>

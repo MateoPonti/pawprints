@@ -86,7 +86,8 @@ main:focus { outline: none; }
     border-bottom: 4px solid var(--violeta);
 }
 .marca { font-size: 1.9rem; font-weight: 700; margin: 0; }
-.marca a { color: var(--violeta); text-decoration: none; }
+.marca a { display: inline-block; color: var(--violeta); text-decoration: none; }
+.marca img { display: block; width: auto; height: 3.5rem; }
 .lema { margin: .25rem 0 0; color: var(--texto-suave); }
 
 #menu { border-bottom: 1px solid var(--borde); }
@@ -466,6 +467,10 @@ input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="
     .carrusel-flecha { width: 2.5rem; height: 2.5rem; }
     .carrusel-efecto { flex-basis: 100%; }
 }
+
+.barra-resultados { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin-bottom: .75rem; }
+.barra-resultados p { margin: 0; }
+.aviso-suave { padding: .6rem .9rem; border-left: 6px solid var(--violeta); background: var(--violeta-claro); border-radius: .3rem; }
 
 .mas-libros { display: block; margin: 1.5rem auto 0; }
 .fin-listado { margin: 1.5rem auto 0; text-align: center; color: var(--texto-suave); }

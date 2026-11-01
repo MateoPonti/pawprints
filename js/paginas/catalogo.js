@@ -164,7 +164,15 @@ function dibujar({ anunciarCambio = true } = {}) {
     const porPagina = Number(filtros.por_pagina);
     const total = filtrados.length;
     const paginas = Math.max(1, Math.ceil(total / porPagina));
-    pagina = Math.min(pagina, paginas);
+    // Una página que no existe (por ejemplo ?pagina=99 en un enlace viejo) se avisa y se muestra la última
+    const aviso = $('#aviso-pagina');
+    aviso.hidden = !(filtros.modo === 'paginas' && pagina > paginas);
+    if (!aviso.hidden) {
+        aviso.textContent = `La página ${pagina} no existe: te mostramos la ${paginas === 1 ? 'única' : `última (${paginas})`}.`;
+        pagina = paginas;
+        escribirUrl();
+    }
+    $('#descargar-csv').disabled = total === 0;
     $('#ver-resultados').textContent = total ? `Ver ${total} resultado${total === 1 ? '' : 's'}` : 'Ver resultados';
 
     if (total === 0) {
@@ -249,6 +257,32 @@ function mostrarMas() {
     estado.textContent = textoEstado(1, mostrados);
     anunciar(`Se agregaron ${mostrados - antes} libros. ${estado.textContent}`);
     prepararScrollInfinito();
+}
+
+// ---------- Descarga en CSV ----------
+
+// Se descarga la vista actual: todos los libros que cumplen la búsqueda y los filtros, en el orden elegido
+// (no solo la página en pantalla). Formato RFC 4180 con BOM, así Excel muestra bien los acentos.
+function celdaCsv(valor) {
+    let texto = String(valor ?? '');
+    // Un texto que empieza con = + - @ lo ejecutaría Excel como fórmula
+    if (/^[=+\-@\t\r]/.test(texto)) texto = `'${texto}`;
+    return /[",\r\n]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
+}
+
+function descargarCsv() {
+    const filas = [
+        ['id', 'titulo', 'autor', 'genero', 'precio', 'resumen'],
+        ...filtrados.map((l) => [l.id, l.titulo, l.autor, genero(l.genero), l.precio, l.resumen]),
+    ];
+    const csv = `﻿${filas.map((fila) => fila.map(celdaCsv).join(',')).join('\r\n')}\r\n`;
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const enlace = el('a', { href: url, download: `catalogo-pawprints-${new Date().toISOString().slice(0, 10)}.csv` });
+    document.body.append(enlace);
+    enlace.click();
+    enlace.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    anunciar(`Se descargó el catálogo con ${filtrados.length} libro${filtrados.length === 1 ? '' : 's'}.`);
 }
 
 // ---------- Búsquedas recientes (localStorage) ----------
@@ -362,6 +396,7 @@ function conectar() {
     });
 
     $('#quitar-filtros').addEventListener('click', quitarFiltros);
+    $('#descargar-csv').addEventListener('click', descargarCsv);
     $('#historial-borrar').addEventListener('click', () => {
         historial.borrar();
         dibujarHistorial();

@@ -38,7 +38,9 @@ export function montar() {
     const actual = document.body.dataset.pagina || '';
 
     reemplazar($('#cabecera'),
-        el('p', { class: 'marca' }, el('a', { href: 'index.html' }, 'PawPrints')),
+        // Logo del manual de identidad (opción Violeta); el alt hace de nombre del enlace
+        el('p', { class: 'marca' }, el('a', { href: 'index.html' },
+            el('img', { src: 'img/logo.svg', alt: 'PawPrints, ir al inicio', width: 220, height: 75 }))),
         actual === 'inicio' ? el('p', { class: 'lema', text: 'Tu librería de siempre, ahora también online.' }) : null);
 
     reemplazar($('#menu'), menu(actual));
