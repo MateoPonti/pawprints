@@ -41,7 +41,8 @@ El front no necesita instalar nada: es HTML, CSS y JavaScript nativo.
 
 - **Dirección de la API** (`js/api/config.js`): por defecto es `PRODUCCION`, el back publicado, así que el sitio publicado (rama `main`) siempre apunta bien sin tocar nada. `config.local.js` solo se carga al abrir el front en `localhost` o `127.0.0.1`: en cualquier otro dominio se ignora, aunque exista.
 - **Por qué no es un `.env`:** el front es estático y el navegador no puede leer un `.env`. El equivalente es `config.local.js` (local, no se sube) con `config.local.example.js` como plantilla (se sube).
-- **Sesión:** `POST /api/login` devuelve un token JWT. Se guarda en `sessionStorage` y viaja en cada pedido como `Authorization: Bearer <token>`. Salir es descartar el token. No hay cookies ni CSRF.
+- **Sesión:** la sesión es la de PHP (`$_SESSION`), guardada en la base del back. `POST /api/login` deja el id en una cookie `HttpOnly`, `Secure` y `SameSite=Strict` (JavaScript no la puede leer ni borrar) y devuelve el token CSRF. Todos los `fetch` van con `credentials: 'include'` y los POST con sesión mandan `X-CSRF-Token`. En `sessionStorage` solo se guardan el usuario (nombre y rol, para mostrar) y el token CSRF (`js/servicios/sesion.js`). Salir llama a `POST /api/logout`, que destruye la sesión en el servidor y borra la cookie.
+- **Proxy de Vercel** (`vercel.json`): publicado, el front pide `/api/...` a su propio dominio y Vercel lo reenvía a Render. Así la cookie es del propio sitio; si el front llamara directo a `onrender.com`, sería una cookie de terceros y el navegador no la mandaría.
 - **CORS:** el back solo acepta los orígenes de su variable `FRONT_URL`; ahí va la dirección donde se publica el front.
 - **Errores:** la API responde `{"error", "mensaje", "errores": {campo: mensaje}}`. Los errores por campo (422) se muestran junto a cada campo, igual que la validación del navegador. Si no se puede conectar (por ejemplo, el servidor está arrancando), el mensaje es genérico y se ofrece reintentar.
 
@@ -67,8 +68,9 @@ Todas las respuestas son JSON. Los errores tienen la forma `{"error": "codigo", 
 | `GET /api/libros` | público | `genero`, `autor`, `precio_max`, `orden` (`relevancia`, `precio-asc`, `precio-desc`, `titulo`), `page`, `per_page` (6, 12, 24; hasta 100) | `{items: [{id, titulo, autor, genero, precio, resumen, portada}], total, pagina, por_pagina, paginas}`. `404` si `page` supera `paginas`. |
 | `GET /api/libros/{id}` | público | `id` = slug | `{libro: {id, titulo, autor, genero, precio, resumen, descripcion, autor_bio, portada}}` o `404` |
 | `POST /api/registro` | público | `nombre`, `email`, `password`, `password_confirm` | `201 {usuario}` o `422` con `errores` |
-| `POST /api/login` | público | `email`, `password` | `{token, tipo, expira_en, usuario: {id, nombre, email, rol}}` o `422` con `mensaje` |
-| `GET /api/me` | token | - | `{usuario}` |
+| `POST /api/login` | público | `email`, `password` | `{csrf, expira_en, usuario: {id, nombre, email, rol}}` + cookie de sesión, o `422` con `mensaje` |
+| `POST /api/logout` | público | - | `204`: destruye la sesión y borra la cookie |
+| `GET /api/me` | sesión | - | `{usuario, csrf}` |
 | `POST /api/reservas` | público | `{nombre, email, telefono, items: [{libro, cantidad}]}` | `201 {reserva: {nombre, email, ...}}`. En `422`, las claves de `errores` son `nombre`, `email`, `telefono`, `items.N.libro`, `items.N.cantidad` e `items` (error general). |
 | `POST /api/admin/libros` | admin | `titulo`, `autor`, `genero`, `precio`, `resumen`, `descripcion`, `autor_bio`, `imagen_url` | `201 {libro}` o `422` con `errores` (claves = nombres de los campos) |
 | `POST /api/admin/portadas` | admin | La imagen tal cual en el cuerpo, con `Content-Type: image/jpeg`, `image/png` o `image/webp` (hasta 1 MB) | `201 {portada: {id, url}}` (`url` relativa a la API, por ejemplo `/api/portadas/3`) o `422` con `errores.portada` |
@@ -85,7 +87,7 @@ styles/   reset.css (reset-css 5.0.1), style.css, print.css
 img/      logo.svg, icono.svg (favicon), placeholder.svg, carrusel/ (imágenes de novedades del inicio)
 SITEMAP.md, PawPrints Wireframes.html, autores.txt, VERSION
 js/
-  api/          config.js (dirección de la API), config.local.example.js, cliente.js (fetch + token + errores), auth.js, libros.js, reservas.js, admin.js
+  api/          config.js (dirección de la API), config.local.example.js, cliente.js (fetch + cookie + CSRF + errores), auth.js, libros.js, reservas.js, admin.js
   servicios/    sesion.js, dom.js, formato.js, formularios.js (validación), layout.js (cabecera, menú y pie), historial.js (búsquedas recientes)
   componentes/  carrusel.js, zona-imagen.js (componentes reutilizables)
   paginas/      un script por pantalla

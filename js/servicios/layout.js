@@ -1,6 +1,7 @@
 // Cabecera, menú, pie y zona de avisos comunes a todas las páginas.
 // Cada página marca su sección en <body data-pagina="..."> para resaltar el ítem activo del menú.
 import * as sesion from './sesion.js';
+import * as auth from '../api/auth.js';
 import { el, $, reemplazar } from './dom.js';
 
 const MENU = [
@@ -22,7 +23,12 @@ function menu(actual) {
         items.push(el('li', {}, el('button', {
             type: 'button',
             class: 'boton-menu',
-            onclick: () => {
+            onclick: async () => {
+                try {
+                    await auth.logout(); // destruye la sesión en el back y borra la cookie
+                } catch {
+                    // Sin conexión: se borra lo local igual.
+                }
                 sesion.cerrar();
                 window.location.href = 'index.html';
             },

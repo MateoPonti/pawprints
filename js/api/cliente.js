@@ -1,4 +1,4 @@
-// Cliente HTTP: arma la URL, manda el token y convierte las respuestas.
+// Cliente HTTP: arma la URL, manda la cookie de sesión y el token CSRF, y convierte las respuestas.
 // Todos los fetch del front pasan por acá; auth.js, libros.js, reservas.js y admin.js solo dicen qué ruta llamar.
 import { API_URL } from './config.js';
 import * as sesion from '../servicios/sesion.js';
@@ -15,7 +15,8 @@ export class ErrorApi extends Error {
 }
 
 function armarUrl(ruta, consulta) {
-    const url = new URL(API_URL + ruta);
+    // El segundo argumento hace válida una ruta relativa (/api/...) cuando API_URL está vacío
+    const url = new URL(API_URL + ruta, window.location.origin);
     Object.entries(consulta || {}).forEach(([clave, valor]) => {
         if (valor !== undefined && valor !== null && valor !== '') url.searchParams.set(clave, valor);
     });
@@ -25,8 +26,9 @@ function armarUrl(ruta, consulta) {
 // cuerpo se manda como JSON; archivo (un Blob o File) se manda tal cual, con su tipo como Content-Type.
 export async function pedir(metodo, ruta, { consulta, cuerpo, archivo } = {}) {
     const cabeceras = { Accept: 'application/json' };
-    const token = sesion.token();
-    if (token) cabeceras.Authorization = `Bearer ${token}`;
+    // La cookie de sesión la manda el navegador solo; lo que cambia datos lleva además el token CSRF
+    const csrf = sesion.csrf();
+    if (csrf && metodo !== 'GET') cabeceras['X-CSRF-Token'] = csrf;
     if (cuerpo !== undefined) cabeceras['Content-Type'] = 'application/json';
     if (archivo) cabeceras['Content-Type'] = archivo.type;
 
@@ -35,6 +37,8 @@ export async function pedir(metodo, ruta, { consulta, cuerpo, archivo } = {}) {
         respuesta = await fetch(armarUrl(ruta, consulta), {
             method: metodo,
             headers: cabeceras,
+            // include: manda la cookie y guarda la que llega, también en local, donde la API está en otro puerto
+            credentials: 'include',
             body: archivo || (cuerpo !== undefined ? JSON.stringify(cuerpo) : undefined),
         });
     } catch {
@@ -52,8 +56,8 @@ export async function pedir(metodo, ruta, { consulta, cuerpo, archivo } = {}) {
     }
 
     if (!respuesta.ok) {
-        // Token vencido o usuario borrado: la sesión guardada ya no sirve.
-        if (respuesta.status === 401 && token) sesion.cerrar();
+        // Sesión vencida o usuario borrado: los datos guardados de la sesión ya no sirven.
+        if (respuesta.status === 401 && sesion.hayUsuario()) sesion.cerrar();
         throw new ErrorApi(
             respuesta.status,
             datos?.error || 'error',

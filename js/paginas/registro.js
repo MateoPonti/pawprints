@@ -26,7 +26,7 @@ activar(form, async (f) => {
         password,
         password_confirm: f.elements.password_confirm.value,
     });
-    const { token, usuario } = await auth.login(email, password);
-    sesion.iniciar(token, usuario);
+    const { csrf, usuario } = await auth.login(email, password);
+    sesion.iniciar(csrf, usuario);
     window.location.href = 'index.html';
 }, { extra });

@@ -19,7 +19,7 @@ function destino() {
 }
 
 activar(form, async (f) => {
-    const { token, usuario } = await auth.login(f.elements.email.value.trim().toLowerCase(), f.elements.password.value);
-    sesion.iniciar(token, usuario);
+    const { csrf, usuario } = await auth.login(f.elements.email.value.trim().toLowerCase(), f.elements.password.value);
+    sesion.iniciar(csrf, usuario);
     window.location.href = destino();
 });

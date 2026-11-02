@@ -1,4 +1,4 @@
-// Administración del catálogo (el back exige token de un usuario con rol admin).
+// Administración del catálogo (el back exige la sesión de un usuario con rol admin y el token CSRF).
 import { post, subir, urlDeApi } from './cliente.js';
 
 // → {libro} (201)
