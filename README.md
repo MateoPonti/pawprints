@@ -24,6 +24,19 @@ Abrir `http://localhost:5500`. Por defecto el sitio usa el back publicado, así 
 2. Copiar `js/api/config.local.example.js` como `js/api/config.local.js`. Ese archivo está en el `.gitignore`: no se sube al repo.
 3. Recargar. Para volver al back publicado, borrar `config.local.js`.
 
+## Entorno de prueba
+
+Versiones con las que se desarrolló y probó (lo pide la guía de entrega):
+
+| | Versión |
+|---|---|
+| Sistema operativo | Windows 11 Pro (build 26200) |
+| Navegadores | Chrome 156 y Edge 156 (escritorio y vista adaptable de celular con F12) |
+| Servidor local para el front | `php -S` (PHP 8.4.10) o `python -m http.server` (Python 3.14.4) |
+| Publicado en | Vercel (sitio estático, sin build) |
+
+El front no necesita instalar nada: es HTML, CSS y JavaScript nativo.
+
 ## Conexión con el back
 
 - **Dirección de la API** (`js/api/config.js`): por defecto es `PRODUCCION`, el back publicado, así que el sitio publicado (rama `main`) siempre apunta bien sin tocar nada. `config.local.js` solo se carga al abrir el front en `localhost` o `127.0.0.1`: en cualquier otro dominio se ignora, aunque exista.
