@@ -19,7 +19,7 @@ function enlace(clave, href, texto, actual) {
 function menu(actual) {
     const items = MENU.map(([clave, href, texto]) => enlace(clave, href, texto, actual));
     if (sesion.hayUsuario()) {
-        if (sesion.esAdmin()) items.push(enlace('admin', 'admin-libro.html', 'Cargar libro', actual));
+        if (sesion.puede('libros.crear')) items.push(enlace('admin', 'admin-libro.html', 'Cargar libro', actual));
         items.push(el('li', {}, el('button', {
             type: 'button',
             class: 'boton-menu',
@@ -76,13 +76,13 @@ export function anunciar(texto) {
     window.setTimeout(() => { zona.textContent = texto; }, 50);
 }
 
-// Exige sesión (y rol admin si hace falta); si no se cumple, redirige. El back vuelve a controlarlo en cada pedido.
-export function exigir({ admin = false } = {}) {
+// Exige sesión (y un permiso si hace falta); si no se cumple, redirige. El back vuelve a controlarlo en cada pedido.
+export function exigir({ permiso = null } = {}) {
     if (!sesion.hayUsuario()) {
         window.location.replace(`login.html?volver=${encodeURIComponent(window.location.pathname.split('/').pop())}`);
         return false;
     }
-    if (admin && !sesion.esAdmin()) {
+    if (permiso && !sesion.puede(permiso)) {
         window.location.replace('index.html');
         return false;
     }

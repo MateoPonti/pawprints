@@ -1,4 +1,4 @@
-// Alta de libros (solo rol admin): POST /api/admin/portadas (si eligieron una tapa) y POST /api/admin/libros.
+// Alta de libros (permiso libros.crear, rol admin): POST /api/admin/portadas (si eligieron una tapa) y POST /api/admin/libros.
 import { montar, exigir } from '../servicios/layout.js';
 import { $ } from '../servicios/dom.js';
 import { activar, conectarContadores, ponerError, sacarError } from '../servicios/formularios.js';
@@ -8,7 +8,7 @@ import * as admin from '../api/admin.js';
 
 montar();
 
-if (exigir({ admin: true })) {
+if (exigir({ permiso: 'libros.crear' })) {
     const form = $('#form-libro');
     const campoUrl = form.elements.imagen_url;
     conectarContadores(form);

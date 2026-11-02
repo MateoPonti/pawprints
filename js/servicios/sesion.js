@@ -35,7 +35,9 @@ export function usuario() {
 }
 
 export const hayUsuario = () => csrf() !== null && usuario() !== null;
-export const esAdmin = () => usuario()?.rol === 'admin';
+// Permisos del rol (vienen en el usuario del login y de /api/me), p. ej. puede('libros.crear').
+// Solo sirve para mostrar u ocultar cosas: el back vuelve a controlar el permiso en cada pedido.
+export const puede = (permiso) => (usuario()?.permisos || []).includes(permiso);
 
 export function iniciar(csrfNuevo, datosUsuario) {
     escribir(CLAVE_CSRF, csrfNuevo);

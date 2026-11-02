@@ -19,7 +19,7 @@ if (sesion.hayUsuario()) {
         el('p', {}, `Hola, ${sesion.usuario().nombre}. Ya ingresaste a tu cuenta.`),
         el('div', { class: 'acciones' },
             el('a', { class: 'btn', href: 'reserva.html' }, 'Reservar un libro'),
-            sesion.esAdmin() ? el('a', { class: 'btn secundario', href: 'admin-libro.html' }, 'Cargar un libro') : null));
+            sesion.puede('libros.crear') ? el('a', { class: 'btn secundario', href: 'admin-libro.html' }, 'Cargar un libro') : null));
 }
 
 async function cargar() {
