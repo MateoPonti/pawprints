@@ -24,6 +24,21 @@
     <h1>Cargar libro</h1>
     <p>Los campos marcados como <span class="nota">(obligatorio)</span> hay que completarlos. Solo pueden usar esta página las cuentas de administración.</p>
 
+    <section class="open-library" aria-labelledby="ol-titulo">
+      <h2 id="ol-titulo">Completar con Open Library</h2>
+      <p>Buscá el libro por ISBN, o por título y autor, y elegí un resultado: completamos el título, el autor, la descripción, la biografía y la tapa. Después revisá los datos y completá el género y el precio.</p>
+      <form id="form-openlibrary" role="search" novalidate>
+        <div class="campo">
+          <label for="ol-q">ISBN, o título y autor</label>
+          <input type="search" id="ol-q" name="q" minlength="3" maxlength="100" autocomplete="off" aria-describedby="ol-q-ayuda">
+          <p class="ayuda" id="ol-q-ayuda">Por ejemplo 9788437604572, o "rayuela cortazar".</p>
+        </div>
+        <button type="submit" class="boton-secundario" data-ocupado="Buscando...">Buscar en Open Library</button>
+      </form>
+      <p id="ol-estado" role="status"></p>
+      <ul id="ol-resultados" class="ol-resultados"></ul>
+    </section>
+
     <form id="form-libro" method="post" action="admin-libro.html" novalidate>
       <div class="aviso resumen-errores" tabindex="-1" hidden></div>
       <div class="aviso aviso-general" role="alert" tabindex="-1" hidden></div>
@@ -80,7 +95,7 @@
         <div class="campo">
           <label for="imagen-url">O la dirección de una imagen</label>
           <input type="url" id="imagen-url" name="imagen_url" aria-describedby="imagen-url-ayuda" maxlength="255" pattern="https?://.+" inputmode="url" title="Ingresá una dirección que empiece con http:// o https://.">
-          <p class="ayuda" id="imagen-url-ayuda">Tiene que empezar con http:// o https://. Si elegís una imagen, no hace falta. Sin ninguna de las dos se usa la portada por defecto.</p>
+          <p class="ayuda" id="imagen-url-ayuda">Tiene que empezar con http:// o https://. Si elegís una imagen, no hace falta. Sin ninguna de las dos, al guardar buscamos la tapa en Open Library; si no la tiene, se usa la portada por defecto.</p>
         </div>
       </fieldset>
       <button type="submit" data-ocupado="Guardando...">Guardar libro</button>
