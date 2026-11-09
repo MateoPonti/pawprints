@@ -9,7 +9,8 @@ Inicio (index.html)
 ├── Contacto (contacto.html)
 ├── Ingresar (login.html)
 ├── Crear cuenta (registro.html)
-└── Cargar libro (admin-libro.html, solo rol admin)
+├── Cargar libro (admin-libro.html, permiso libros.crear: rol admin)
+└── Pedidos (admin-reservas.html, permiso reservas.ver: roles personal y admin)
 
 En el footer de todas las páginas: datos de contacto y redes sociales.
 ```

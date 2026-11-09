@@ -1,7 +1,8 @@
 // Detalle de un libro: /libro.html?id=rayuela
 import { montar } from '../servicios/layout.js';
 import { el, $, reemplazar } from '../servicios/dom.js';
-import { precio, genero, portada } from '../servicios/formato.js';
+import { genero, portada } from '../servicios/formato.js';
+import { objeto, oferta, autor } from '../servicios/microdata.js';
 import * as libros from '../api/libros.js';
 
 montar();
@@ -29,21 +30,30 @@ async function cargar() {
         document.title = `${libro.titulo} - PawPrints`;
         $('meta[name="description"]').setAttribute('content', libro.resumen || `Detalle de ${libro.titulo}`);
         reemplazar(zona,
-            el('nav', { class: 'ruta', 'aria-label': 'Ruta de navegación' }, el('ol', {},
-                el('li', {}, el('a', { href: 'catalogo.html' }, 'Catálogo')),
-                el('li', {}, el('span', { 'aria-current': 'page' }, libro.titulo)))),
-            el('article', { class: 'libro', 'aria-labelledby': 'titulo-pagina' },
+            // Ruta de navegación como BreadcrumbList: cada paso es un ListItem con su posición
+            el('nav', { class: 'ruta', 'aria-label': 'Ruta de navegación' }, el('ol', objeto('BreadcrumbList'),
+                el('li', { itemprop: 'itemListElement', ...objeto('ListItem') },
+                    el('a', { href: 'catalogo.html', itemprop: 'item' }, el('span', { itemprop: 'name' }, 'Catálogo')),
+                    el('meta', { itemprop: 'position', content: '1' })),
+                el('li', { itemprop: 'itemListElement', ...objeto('ListItem') },
+                    el('span', { 'aria-current': 'page', itemprop: 'name' }, libro.titulo),
+                    el('meta', { itemprop: 'position', content: '2' })))),
+            // El libro completo: Book con autor (Person, con su biografía), género, descripción, tapa y precio (Offer)
+            el('article', { class: 'libro', 'aria-labelledby': 'titulo-pagina', ...objeto('Book') },
                 el('figure', {},
-                    el('img', { src: portada(libro), alt: `Portada de ${libro.titulo}`, width: 200, height: 300 })),
+                    el('img', { src: portada(libro), alt: `Portada de ${libro.titulo}`, width: 200, height: 300, itemprop: 'image' })),
                 el('div', { class: 'libro-datos' },
-                    el('h1', { id: 'titulo-pagina', text: libro.titulo }),
-                    el('p', {}, 'Autor: ', el('a', { href: '#autor' }, libro.autor)),
-                    el('p', {}, `Género: ${genero(libro.genero)}`),
-                    el('p', { class: 'precio' }, 'Precio: ', el('data', { value: libro.precio }, precio(libro.precio))),
+                    el('h1', { id: 'titulo-pagina', text: libro.titulo, itemprop: 'name' }),
+                    el('p', {}, 'Autor: ', el('a', { href: '#autor' }, autor(libro.autor, libro.autor_bio))),
+                    el('p', {}, 'Género: ', el('span', { itemprop: 'genre' }, genero(libro.genero))),
+                    el('p', { class: 'precio' }, 'Precio: ', oferta(libro.precio)),
                     el('a', { class: 'btn', href: `reserva.html?libro=${encodeURIComponent(libro.id)}` }, 'Reservar este libro')),
                 el('section', { 'aria-labelledby': 'descripcion-titulo' },
                     el('h2', { id: 'descripcion-titulo', text: 'Descripción completa' }),
-                    el('p', { text: libro.descripcion || libro.resumen || 'Sin descripción por el momento.' })),
+                    el('p', {
+                        text: libro.descripcion || libro.resumen || 'Sin descripción por el momento.',
+                        itemprop: libro.descripcion || libro.resumen ? 'description' : false,
+                    })),
                 el('section', { id: 'autor', 'aria-labelledby': 'autor-titulo' },
                     el('h2', { id: 'autor-titulo', text: 'Sobre el autor' }),
                     el('p', { text: libro.autor_bio || 'Sin información del autor por el momento.' }))));

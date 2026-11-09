@@ -6,6 +6,7 @@ import { montar, anunciar } from '../servicios/layout.js';
 import { el, $, reemplazar } from '../servicios/dom.js';
 import { precio, genero, GENEROS, portada } from '../servicios/formato.js';
 import { mensajeDe, ponerError, sacarError } from '../servicios/formularios.js';
+import { objeto, oferta, autor } from '../servicios/microdata.js';
 import * as libros from '../api/libros.js';
 import * as historial from '../servicios/historial.js';
 
@@ -142,13 +143,14 @@ function aplicar() {
 function ficha(libro) {
     const detalle = `libro.html?id=${encodeURIComponent(libro.id)}`;
     return el('li', {},
-        el('article', { 'aria-labelledby': `libro-${libro.id}-titulo` },
-            el('img', { src: portada(libro), alt: `Portada de ${libro.titulo}`, width: 120, height: 180, loading: 'lazy' }),
-            el('h3', { id: `libro-${libro.id}-titulo` }, el('a', { href: detalle }, libro.titulo)),
-            el('p', {}, `Autor: ${libro.autor}`),
-            el('p', {}, `Género: ${genero(libro.genero)}`),
-            el('p', {}, 'Precio: ', el('data', { value: libro.precio }, precio(libro.precio))),
-            el('p', { text: libro.resumen }),
+        // Cada ficha es un libro a la venta (Book con su Offer), no una publicidad: ver microdata.js
+        el('article', { 'aria-labelledby': `libro-${libro.id}-titulo`, ...objeto('Book') },
+            el('img', { src: portada(libro), alt: `Portada de ${libro.titulo}`, width: 120, height: 180, loading: 'lazy', itemprop: 'image' }),
+            el('h3', { id: `libro-${libro.id}-titulo` }, el('a', { href: detalle, itemprop: 'url' }, el('span', { itemprop: 'name' }, libro.titulo))),
+            el('p', {}, 'Autor: ', autor(libro.autor)),
+            el('p', {}, 'Género: ', el('span', { itemprop: 'genre' }, genero(libro.genero))),
+            el('p', {}, 'Precio: ', oferta(libro.precio)),
+            el('p', { text: libro.resumen, itemprop: 'description' }),
             el('a', { class: 'btn', href: detalle }, 'Ver detalle',
                 el('span', { class: 'visualmente-oculto', text: ` de ${libro.titulo}` }))));
 }

@@ -3,6 +3,7 @@
 import * as sesion from './sesion.js';
 import * as auth from '../api/auth.js';
 import { el, $, reemplazar } from './dom.js';
+import { objeto } from './microdata.js';
 
 const MENU = [
     ['inicio', 'index.html', 'Inicio'],
@@ -20,6 +21,7 @@ function menu(actual) {
     const items = MENU.map(([clave, href, texto]) => enlace(clave, href, texto, actual));
     if (sesion.hayUsuario()) {
         if (sesion.puede('libros.crear')) items.push(enlace('admin', 'admin-libro.html', 'Cargar libro', actual));
+        if (sesion.puede('reservas.ver')) items.push(enlace('pedidos', 'admin-reservas.html', 'Pedidos', actual));
         items.push(el('li', {}, el('button', {
             type: 'button',
             class: 'boton-menu',
@@ -40,6 +42,22 @@ function menu(actual) {
     return el('ul', {}, items);
 }
 
+// Los datos de la librería con microdata (BookStore) van solo en el pie del inicio; la ficha completa,
+// con horarios y sedes, está en contacto.html. En el resto de las páginas el pie es el mismo pero sin
+// microdata: repetir la librería en cada página no le suma nada al buscador (ver README, consigna 8).
+function direccionConMicrodata() {
+    return el('address', objeto('BookStore'),
+        el('meta', { itemprop: 'name', content: 'PawPrints' }),
+        el('link', { itemprop: 'url', href: 'index.html' }),
+        el('span', { itemprop: 'address', ...objeto('PostalAddress') },
+            el('span', { itemprop: 'streetAddress' }, 'Av. Siempre Viva 742'), ', ',
+            el('span', { itemprop: 'addressLocality' }, 'Luján'), ', ',
+            el('span', { itemprop: 'addressRegion' }, 'Buenos Aires'),
+            el('meta', { itemprop: 'addressCountry', content: 'AR' })), el('br'),
+        'Teléfono: ', el('a', { href: 'tel:+542323123456' }, el('span', { itemprop: 'telephone' }, '(02323) 12-3456')), el('br'),
+        'Email: ', el('a', { href: 'mailto:contacto@pawprints.com.ar' }, el('span', { itemprop: 'email' }, 'contacto@pawprints.com.ar')));
+}
+
 export function montar() {
     const actual = document.body.dataset.pagina || '';
 
@@ -52,7 +70,7 @@ export function montar() {
     reemplazar($('#menu'), menu(actual));
 
     reemplazar($('#pie'),
-        el('address', {},
+        actual === 'inicio' ? direccionConMicrodata() : el('address', {},
             'Av. Siempre Viva 742, Luján, Buenos Aires', el('br'),
             'Teléfono: ', el('a', { href: 'tel:+542323123456' }, '(02323) 12-3456'), el('br'),
             'Email: ', el('a', { href: 'mailto:contacto@pawprints.com.ar' }, 'contacto@pawprints.com.ar')),

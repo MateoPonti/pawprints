@@ -24,40 +24,52 @@
     <h1>Contacto</h1>
     <p>Encontrá nuestras sedes y cómo contactarnos.</p>
 
-    <section aria-labelledby="datos-titulo">
-      <h2 id="datos-titulo">Nuestros datos</h2>
-      <address>
-        Av. Siempre Viva 742, Luján, Buenos Aires<br>
-        Teléfono: <a href="tel:+542323123456">(02323) 12-3456</a><br>
-        Email: <a href="mailto:contacto@pawprints.com.ar">contacto@pawprints.com.ar</a>
-      </address>
-    </section>
+    <!-- Microdata estática (TP5): la librería es un BookStore con su dirección, horario y sedes.
+         Va escrita en el HTML porque estos datos no cambian y así la ven todos los buscadores, aunque no ejecuten JavaScript. -->
+    <div itemscope itemtype="https://schema.org/BookStore">
+      <meta itemprop="name" content="PawPrints">
+      <link itemprop="url" href="index.html">
+      <link itemprop="logo" href="img/logo.svg">
+      <meta itemprop="priceRange" content="$$">
 
-    <section aria-labelledby="horario-titulo">
-      <h2 id="horario-titulo">Horario de atención</h2>
-      <table>
-        <caption>Horario del local físico</caption>
-        <thead>
-          <tr><th scope="col">Día</th><th scope="col">Horario</th></tr>
-        </thead>
-        <tbody>
-          <tr><th scope="row">Lunes a viernes</th><td><time datetime="09:00">09:00</time> a <time datetime="19:00">19:00</time></td></tr>
-          <tr><th scope="row">Sábados</th><td><time datetime="09:00">09:00</time> a <time datetime="13:00">13:00</time></td></tr>
-          <tr><th scope="row">Domingos</th><td>Cerrado</td></tr>
-        </tbody>
-      </table>
-      <p>Los días feriados todas las sedes permanecen cerradas.</p>
-    </section>
+      <section aria-labelledby="datos-titulo">
+        <h2 id="datos-titulo">Nuestros datos</h2>
+        <address>
+          <span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress"><span itemprop="streetAddress">Av. Siempre Viva 742</span>, <span itemprop="addressLocality">Luján</span>, <span itemprop="addressRegion">Buenos Aires</span><meta itemprop="addressCountry" content="AR"></span><br>
+          Teléfono: <a href="tel:+542323123456"><span itemprop="telephone">(02323) 12-3456</span></a><br>
+          Email: <a href="mailto:contacto@pawprints.com.ar"><span itemprop="email">contacto@pawprints.com.ar</span></a>
+        </address>
+      </section>
 
-    <section aria-labelledby="sedes-titulo">
-      <h2 id="sedes-titulo">Nuestras sedes</h2>
-      <ul class="sedes-lista">
-        <li>Ramos Mejía: <a href="tel:+541165456777">11 6545-6777</a></li>
-        <li>Morón: <a href="tel:+541164456767">11 6445-6767</a></li>
-        <li>Zárate: <a href="tel:+541189456997">11 8945-6997</a></li>
-        <li>Pilar: <a href="tel:+541112455467">11 1245-5467</a></li>
-      </ul>
-    </section>
+      <section aria-labelledby="horario-titulo">
+        <h2 id="horario-titulo">Horario de atención</h2>
+        <meta itemprop="openingHours" content="Mo-Fr 09:00-19:00">
+        <meta itemprop="openingHours" content="Sa 09:00-13:00">
+        <table>
+          <caption>Horario del local físico</caption>
+          <thead>
+            <tr><th scope="col">Día</th><th scope="col">Horario</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Lunes a viernes</th><td><time datetime="09:00">09:00</time> a <time datetime="19:00">19:00</time></td></tr>
+            <tr><th scope="row">Sábados</th><td><time datetime="09:00">09:00</time> a <time datetime="13:00">13:00</time></td></tr>
+            <tr><th scope="row">Domingos</th><td>Cerrado</td></tr>
+          </tbody>
+        </table>
+        <p>Los días feriados todas las sedes permanecen cerradas.</p>
+      </section>
+
+      <section aria-labelledby="sedes-titulo">
+        <h2 id="sedes-titulo">Nuestras sedes</h2>
+        <!-- Cada sede es otra librería (department) de PawPrints, con su localidad y su teléfono -->
+        <ul class="sedes-lista">
+          <li itemprop="department" itemscope itemtype="https://schema.org/BookStore"><meta itemprop="name" content="PawPrints Ramos Mejía"><span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress"><span itemprop="addressLocality">Ramos Mejía</span></span>: <a href="tel:+541165456777"><span itemprop="telephone">11 6545-6777</span></a></li>
+          <li itemprop="department" itemscope itemtype="https://schema.org/BookStore"><meta itemprop="name" content="PawPrints Morón"><span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress"><span itemprop="addressLocality">Morón</span></span>: <a href="tel:+541164456767"><span itemprop="telephone">11 6445-6767</span></a></li>
+          <li itemprop="department" itemscope itemtype="https://schema.org/BookStore"><meta itemprop="name" content="PawPrints Zárate"><span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress"><span itemprop="addressLocality">Zárate</span></span>: <a href="tel:+541189456997"><span itemprop="telephone">11 8945-6997</span></a></li>
+          <li itemprop="department" itemscope itemtype="https://schema.org/BookStore"><meta itemprop="name" content="PawPrints Pilar"><span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress"><span itemprop="addressLocality">Pilar</span></span>: <a href="tel:+541112455467"><span itemprop="telephone">11 1245-5467</span></a></li>
+        </ul>
+      </section>
+    </div>
   </main>
 
   <footer id="pie"></footer>
