@@ -77,6 +77,8 @@ function confirmar(reserva, enviados) {
     reemplazar(seccion,
         el('h2', { id: 'confirmacion-titulo', tabindex: '-1', text: 'Recibimos tu reserva' }),
         el('p', {}, `Gracias, ${reserva?.nombre || enviados.nombre}. Nos vamos a comunicar a ${reserva?.email || enviados.email} para confirmarla.`),
+        // El número existe cuando la reserva quedó guardada en la base (el back sin base solo manda el correo)
+        reserva?.numero ? el('p', {}, 'Número de reserva: ', el('strong', { text: `#${reserva.numero}` })) : null,
         el('h3', { text: 'Libros reservados' }),
         el('ul', {}, enviados.items.map((item) => {
             const libro = titulos.get(item.libro);

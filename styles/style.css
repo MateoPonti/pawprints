@@ -512,6 +512,19 @@ figcaption { margin-top: .3rem; font-size: .85rem; color: var(--texto-suave); }
 #confirmacion { padding: 1.25rem; border-left: 8px solid var(--violeta); background: var(--violeta-claro); border-radius: 0 .5rem .5rem 0; max-width: 40rem; }
 #confirmacion h2 { margin-top: 0; }
 
+/* ---------- Open Library (alta de libros) y pedidos ---------- */
+.open-library { margin-bottom: 2rem; padding: 1rem 1.25rem; border-left: 6px solid var(--violeta); background: var(--violeta-claro); border-radius: 0 .5rem .5rem 0; max-width: 40rem; }
+.open-library h2 { margin-top: 0; }
+.ol-resultados { list-style: none; padding: 0; display: grid; gap: .5rem; }
+.ol-resultado { display: flex; align-items: center; gap: .75rem; width: 100%; text-align: left; padding: .4rem .75rem; background: var(--blanco); color: inherit; border: 1px solid var(--violeta); border-radius: .3rem; font-weight: 400; }
+.ol-resultado:hover { background: var(--blanco); outline: 2px solid var(--violeta); }
+.ol-resultado img { flex: none; width: 40px; height: 60px; object-fit: cover; }
+.pedido { margin-bottom: 1.5rem; padding: 1rem 1.25rem; border: 1px solid #ddd; border-radius: .5rem; max-width: 40rem; }
+.pedido h2 { margin-top: 0; font-size: 1.2rem; }
+.pedido p { margin: .25rem 0; }
+.pedido table { max-width: none; margin: .75rem 0; }
+.pedido th, .pedido td { text-align: left; padding: .3rem .5rem; border-bottom: 1px solid #ddd; }
+
 /* ---------- Pantallas más anchas ---------- */
 @media (min-width: 700px) {
     .canales, .promociones ul, .catalogo-lista, .servicios-lista { grid-template-columns: repeat(2, 1fr); }

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedidos - PawPrints</title>
+  <meta name="description" content="Listado de pedidos (reservas) para el personal de la librería.">
+  <link rel="icon" href="img/icono.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="styles/reset.css">
+  <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="styles/print.css" media="print">
+</head>
+<body data-pagina="pedidos">
+  <a class="salto" href="#contenido">Saltar al contenido</a>
+
+  <header id="cabecera"></header>
+  <nav id="menu" aria-label="Navegación principal"></nav>
+
+  <main id="contenido" tabindex="-1">
+    <noscript><p>PawPrints necesita JavaScript para mostrar el catálogo y las cuentas. Activalo en tu navegador y volvé a cargar la página.</p></noscript>
+    <h1>Pedidos</h1>
+    <p>Reservas hechas desde el sitio, de la más nueva a la más vieja. Solo puede ver esta página el personal de la librería.</p>
+
+    <form id="filtro-pedidos" role="search" novalidate>
+      <div class="campo">
+        <label for="q">Buscar por nombre o correo</label>
+        <input type="search" id="q" name="q" maxlength="80" autocomplete="off">
+      </div>
+      <button type="submit" class="boton-secundario">Buscar</button>
+    </form>
+
+    <p id="estado-pedidos" role="status"></p>
+    <div id="pedidos"></div>
+  </main>
+
+  <footer id="pie"></footer>
+
+  <script type="module" src="js/paginas/admin-reservas.js"></script>
+</body>
+</html>
