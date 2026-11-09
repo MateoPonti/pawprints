@@ -56,7 +56,8 @@ El front no necesita instalar nada: es HTML, CSS y JavaScript nativo.
 | `reserva.html` | `GET /api/libros?per_page=100`, `POST /api/reservas` | Reserva de uno o más libros |
 | `login.html` | `POST /api/login` | Ingresar (`?volver=pagina.html` vuelve ahí) |
 | `registro.html` | `POST /api/registro` y `POST /api/login` | Crear cuenta e ingresar |
-| `admin-libro.html` | `POST /api/admin/portadas` y `POST /api/admin/libros` | Alta de libros con tapa por arrastrar y soltar (solo rol admin) |
+| `admin-libro.html` | `GET /api/admin/openlibrary`, `GET /api/admin/openlibrary/obra`, `POST /api/admin/portadas` y `POST /api/admin/libros` | Alta de libros con autocompletar de Open Library y tapa por arrastrar y soltar (permiso `libros.crear`) |
+| `admin-reservas.html` | `GET /api/admin/reservas` | Listado de pedidos (permiso `reservas.ver`: roles personal y admin) |
 | `nosotros.html`, `contacto.html` | - | Contenido fijo |
 
 ## Contrato de la API que espera el front
@@ -82,13 +83,13 @@ Todas las respuestas son JSON. Los errores tienen la forma `{"error": "codigo", 
 
 ```
 index.html catalogo.html libro.html reserva.html
-nosotros.html contacto.html login.html registro.html admin-libro.html
+nosotros.html contacto.html login.html registro.html admin-libro.html admin-reservas.html
 styles/   reset.css (reset-css 5.0.1), style.css, print.css
 img/      logo.svg, icono.svg (favicon), placeholder.svg, carrusel/ (imágenes de novedades del inicio)
 SITEMAP.md, PawPrints Wireframes.html, autores.txt, VERSION
 js/
   api/          config.js (dirección de la API), config.local.example.js, cliente.js (fetch + cookie + CSRF + errores), auth.js, libros.js, reservas.js, admin.js
-  servicios/    sesion.js, dom.js, formato.js, formularios.js (validación), layout.js (cabecera, menú y pie), historial.js (búsquedas recientes)
+  servicios/    sesion.js, dom.js, formato.js, formularios.js (validación), layout.js (cabecera, menú y pie), historial.js (búsquedas recientes), microdata.js (schema.org)
   componentes/  carrusel.js, zona-imagen.js (componentes reutilizables)
   paginas/      un script por pantalla
 ```
@@ -148,6 +149,47 @@ La validación es la de `js/servicios/formularios.js`, la misma de todos los for
 - Se guardan en `localStorage` las últimas **5** búsquedas: texto, género, rango de precio y orden. Se guarda una búsqueda al apretar Enter o *Buscar*, o al terminar de escribir en el buscador.
 - Si se repite una búsqueda, sube al primer lugar en vez de duplicarse. Con más de 5, se elimina la más antigua.
 - Aparecen arriba de los filtros: un clic repite la búsqueda, y hay un botón para borrarlas. Si el navegador bloquea el almacenamiento, el catálogo funciona igual, sin historial.
+
+## TP5 - Programación Backend 2 (lo que toca al front)
+
+Las consignas 1 a 7, con su enunciado y respuesta, están en el README del back. Del lado del front:
+
+- **Reserva (consigna 2):** la confirmación muestra el número de reserva que devuelve la API.
+- **Pedidos (consigna 3):** `admin-reservas.html` lista las reservas para quien tiene el permiso `reservas.ver` (roles `personal` y `admin`). Busca por nombre o correo, pagina de a 20 y avisa si el correo de una reserva no salió.
+- **Twig (consigna 4):** acordado con el docente, no se implementa (el front es HTML estático aparte de la API).
+- **XSS (consigna 6):** el HTML dinámico se arma con `el()` (`textContent`, nunca `innerHTML`) y `vercel.json` agrega una *Content-Security-Policy* que solo permite scripts del propio sitio.
+- **Open Library (consigna 7):** en `admin-libro.html`, el recuadro "Completar con Open Library" busca por ISBN, o por título y autor, y al elegir un resultado completa el formulario. Si se guarda sin tapa, el back la busca en Open Library.
+
+### TP5 - Microdata (consigna 8)
+
+> Implementar las funcionalidades necesarias para que cada página tenga la microdata que corresponda.
+> a. ¿Toda la microdata es estática?
+> b. ¿Cómo decidimos en qué página es importante la microdata de ciertos objetos? Por ejemplo, ¿En todos los sitios pondremos la microdata de la/s sucursal/es? En los listados de libros, ¿Qué tipo de objetos son? ¿Son libros, son publicidades, qué son?
+
+La microdata son atributos HTML (`itemscope`, `itemtype`, `itemprop`) que les dicen a los buscadores qué representa cada parte de la página, con el vocabulario de [schema.org](https://schema.org). Con eso, por ejemplo, Google puede mostrar el precio de un libro o el horario de la librería directamente en los resultados.
+
+| Página | Microdata | Cómo se arma |
+|---|---|---|
+| `index.html` | Cada libro destacado es un `Book` con su autor (`Person`) y su precio (`Offer`, en ARS). En el pie, la librería como `BookStore` con dirección (`PostalAddress`), teléfono y correo. | Los libros, con JS (vienen de la API); el pie, con `layout.js` |
+| `catalogo.html` | Cada ficha es un `Book`: nombre, enlace, tapa, autor (`Person`), género, resumen y `Offer` con el precio | JS (`catalogo.js`) |
+| `libro.html` | El libro completo: `Book` con autor (`Person`, con su biografía), género, descripción, tapa y `Offer`. La ruta "Catálogo > libro" es un `BreadcrumbList`. | JS (`libro.js`) |
+| `contacto.html` | La librería como `BookStore`: dirección, teléfono, correo, horario (`openingHours`) y cada sede como otro `BookStore` (`department`) con su localidad y teléfono | Escrita en el HTML (estática) |
+| `nosotros.html` | `AboutPage` sobre la librería (`BookStore` con año de fundación y descripción) | Escrita en el HTML (estática) |
+| `reserva.html`, `login.html`, `registro.html`, páginas de admin | Ninguna | No tienen nada que le sirva a un buscador: son formularios y páginas privadas |
+
+Las funciones para armar la microdata en JS están en `js/servicios/microdata.js` (`objeto('Book')`, `oferta(precio)`, `autor(nombre)`).
+
+**a. ¿Toda la microdata es estática?** No.
+
+- **Estática:** lo que no cambia, como los datos de la librería, su horario, sus sedes o la página "Nuestra historia". Va escrito a mano en el HTML (`contacto.html`, `nosotros.html`).
+- **Dinámica:** la de los libros (título, autor, precio, tapa), que sale de la base y cambia cuando se carga un libro o un precio. Se arma junto con el contenido: en nuestro caso con JavaScript, en las mismas funciones que dibujan cada ficha, así el dato que se muestra y el de la microdata son siempre el mismo.
+- **Contra de armarla con JS:** Google ejecuta JavaScript antes de leer la página, pero otros buscadores y redes sociales no, y esos no ven la microdata de los libros. Con páginas armadas en el servidor (por ejemplo con Twig) llegaría ya escrita en el HTML. En nuestra arquitectura (API + front estático) eso no aplica.
+
+**b. ¿Cómo decidimos en qué página va cada objeto?** La microdata describe **de qué trata la página**, no todo lo que aparece en ella.
+
+- **Sucursales:** la ficha completa de la librería (dirección, horario, sedes) va en **Contacto**, que es la página que trata de eso. En el inicio va una versión corta (nombre, dirección, teléfono), porque es la página que representa al negocio. No la ponemos en todas las páginas: en la ficha de un libro el objeto principal es el libro, y repetir la librería en cada página no le agrega nada al buscador.
+- **Listados de libros:** en el catálogo y en los destacados del inicio, cada ficha es un **libro a la venta**: un `Book` con su `Offer` (precio en pesos). No son publicidades, porque cada una es un producto concreto del catálogo, con precio y página propia. En la ficha del listado va lo básico (nombre, autor, precio, enlace) y en la página del libro, todo (descripción, biografía del autor).
+- **Publicidades:** el carrusel y las promociones del inicio ("20% en autores argentinos", "2x1 en novelas") son publicidades de la librería, no libros. No las marcamos como `Book`: confundirían al buscador con productos que no existen.
 
 ## Formularios y marcado
 
