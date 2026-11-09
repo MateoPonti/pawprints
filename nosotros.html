@@ -21,12 +21,17 @@
 
   <main id="contenido" tabindex="-1">
     <noscript><p>PawPrints necesita JavaScript para mostrar el catálogo y las cuentas. Activalo en tu navegador y volvé a cargar la página.</p></noscript>
-    <article class="nosotros" aria-labelledby="titulo-pagina">
+    <!-- Microdata estática (TP5): la página habla de la librería (AboutPage) y la describe como BookStore -->
+    <article class="nosotros" aria-labelledby="titulo-pagina" itemscope itemtype="https://schema.org/AboutPage">
       <h1 id="titulo-pagina">Nuestra historia</h1>
-      <p>PawPrints nació en 2010 como un pequeño local de barrio en Luján, con la idea de que cualquier persona pudiera encontrar un libro que la representara. Con el tiempo, y gracias a la comunidad de lectores que nos acompañó, fuimos creciendo hasta convertirnos en una librería de referencia de la zona, sumando también la venta online para llegar a más gente.</p>
+      <div itemprop="about" itemscope itemtype="https://schema.org/BookStore">
+      <meta itemprop="name" content="PawPrints">
+      <meta itemprop="foundingDate" content="2010">
+      <link itemprop="url" href="index.html">
+      <p itemprop="description">PawPrints nació en 2010 como un pequeño local de barrio en Luján, con la idea de que cualquier persona pudiera encontrar un libro que la representara. Con el tiempo, y gracias a la comunidad de lectores que nos acompañó, fuimos creciendo hasta convertirnos en una librería de referencia de la zona, sumando también la venta online para llegar a más gente.</p>
 
       <figure>
-        <img src="img/placeholder.svg" alt="Imagen de ejemplo del local de PawPrints en Luján" width="300" height="200">
+        <img src="img/placeholder.svg" alt="Imagen de ejemplo del local de PawPrints en Luján" width="300" height="200" itemprop="image">
         <figcaption>Nuestro local en Luján, Buenos Aires</figcaption>
       </figure>
 
@@ -45,6 +50,7 @@
           <li>Envíos a domicilio en Luján y alrededores</li>
         </ul>
       </section>
+      </div>
     </article>
   </main>
 
