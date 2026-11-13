@@ -19,6 +19,23 @@ const estado = $('#estado-resultados');
 const tituloListado = $('#listado-titulo');
 const celular = window.matchMedia('(max-width: 699px)');
 
+// Botones de acción: los crea el JS y los inserta, porque en el HTML no va funcionalidad (ver README).
+$('#ver-resultados').after(el('button', {
+    type: 'button', id: 'quitar-filtros', class: 'boton-secundario', onclick: () => quitarFiltros(),
+}, 'Quitar filtros'));
+estado.after(el('button', {
+    type: 'button', id: 'descargar-csv', class: 'boton-secundario boton-chico', disabled: true, onclick: () => descargarCsv(),
+}, 'Descargar CSV'));
+$('#historial-lista').after(el('button', {
+    type: 'button', id: 'historial-borrar', class: 'boton-secundario boton-chico',
+    onclick: () => {
+        historial.borrar();
+        dibujarHistorial();
+        anunciar('Se borraron las búsquedas recientes.');
+        form.elements.q.focus();
+    },
+}, 'Borrar búsquedas recientes'));
+
 const ORDENES = ['relevancia', 'titulo', 'autor', 'precio', 'genero'];
 const POR_PAGINA = ['6', '12', '24', '48'];
 const NOMBRE_ORDEN = { relevancia: 'Relevancia', titulo: 'Título', autor: 'Autor', precio: 'Precio', genero: 'Género' };
@@ -397,14 +414,6 @@ function conectar() {
         }
     });
 
-    $('#quitar-filtros').addEventListener('click', quitarFiltros);
-    $('#descargar-csv').addEventListener('click', descargarCsv);
-    $('#historial-borrar').addEventListener('click', () => {
-        historial.borrar();
-        dibujarHistorial();
-        anunciar('Se borraron las búsquedas recientes.');
-        form.elements.q.focus();
-    });
 
     // Atrás / adelante del navegador
     window.addEventListener('popstate', () => {
