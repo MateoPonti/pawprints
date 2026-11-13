@@ -14,7 +14,9 @@ const FILAS_MAX = 10;
 
 const form = $('#form-reserva');
 const filas = $('#filas');
-const botonAgregar = $('#agregar-libro');
+// "Agregar otro libro" lo crea el JS, debajo de las filas (en el HTML no va funcionalidad; ver README)
+const botonAgregar = el('button', { type: 'button', id: 'agregar-libro', class: 'boton-secundario' }, 'Agregar otro libro');
+filas.after(botonAgregar);
 let catalogo = [];
 
 // El libro se elige escribiendo: el datalist sugiere los del catálogo que coinciden con lo escrito
