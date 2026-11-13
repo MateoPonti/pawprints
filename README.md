@@ -191,6 +191,14 @@ Las funciones para armar la microdata en JS están en `js/servicios/microdata.js
 - **Listados de libros:** en el catálogo y en los destacados del inicio, cada ficha es un **libro a la venta**: un `Book` con su `Offer` (precio en pesos). No son publicidades, porque cada una es un producto concreto del catálogo, con precio y página propia. En la ficha del listado va lo básico (nombre, autor, precio, enlace) y en la página del libro, todo (descripción, biografía del autor).
 - **Publicidades:** el carrusel y las promociones del inicio ("20% en autores argentinos", "2x1 en novelas") son publicidades de la librería, no libros. No las marcamos como `Book`: confundirían al buscador con productos que no existen.
 
+## Botones
+
+Regla de la cátedra (video *Ejemplo Menú PAW*): el HTML es semántico y describe el contenido, y **toda la funcionalidad la agrega el JS**. Un botón de acción (`Quitar filtros`, `Descargar CSV`, `Agregar otro libro`…) está atado a una función: si mañana la función cambia o se saca, el HTML no se tendría que tocar.
+
+- En el HTML **no van** `<button>` de acción, `<dialog>`, `onclick=` ni JavaScript dentro de `<script>`. **Sí van** el contenido, los enlaces y los formularios con su botón `type="submit"`.
+- El JS de la página busca el nodo, crea el botón y lo inserta. Ejemplo (`js/paginas/reserva.js`): `filas.after(el('button', { type: 'button', id: 'agregar-libro' }, 'Agregar otro libro'))`.
+- `tests/html-sin-funcionalidad.test.mjs` revisa todas las páginas (`node --test tests/html-sin-funcionalidad.test.mjs`). Corre en cada PR (`.github/workflows/ci.yml`): si alguien agrega un botón al HTML, el check falla.
+
 ## Formularios y marcado
 
 - Todos los campos tienen `label`, `autocomplete` y las restricciones HTML (`required`, `type`, `pattern`, `min`, `max`, `maxlength`, `minlength`). Los formularios llevan `novalidate` y `js/servicios/formularios.js` muestra los mensajes junto al campo, con `aria-invalid` y `aria-describedby`, más un resumen con enlaces a cada error.
