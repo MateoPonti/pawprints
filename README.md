@@ -5,6 +5,7 @@ Sitio web de la librería PawPrints. Programación en Ambiente Web (11086), Comi
 Integrantes: Federico Kasparian, Justino Bernal, Lautaro Marino y Mateo Ponti. Los legajos están en `autores.txt` y la versión en `VERSION`.
 
 - **Sitio publicado (Vercel):** https://pawprints-sigma.vercel.app
+- **Repo del back:** https://github.com/MateoPonti/PAWPrintsBackend (API publicada en Render: https://pawprintsbackend.onrender.com)
 
 Sitio de la librería PawPrints en HTML, CSS y JavaScript nativo, sin frameworks. Consume la API JSON del back (`Backend`): pide los datos con `fetch` y arma las pantallas en el navegador.
 
